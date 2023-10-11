@@ -83,5 +83,4 @@ Amb aquest codi:
 	<true/>
 </dict>
 </plist>
-
 ```
