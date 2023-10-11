@@ -58,3 +58,30 @@ flutter clean
 flutter create . --platforms=linux
 flutter run -d linux
 ```
+
+## Nota per macOS
+
+Per activar l'entrada i sortida de dades WebSocket a macOS, cal tenir l'arxiu:
+
+```bash
+client_flutter/macos/Runner/DebugProfile.entitlements
+```
+
+Amb aquest codi:
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.security.app-sandbox</key>
+	<true/>
+	<key>com.apple.security.cs.allow-jit</key>
+	<true/>
+	<key>com.apple.security.network.client</key>
+	<true/>
+	<key>com.apple.security.network.server</key>
+	<true/>
+</dict>
+</plist>
+
+```

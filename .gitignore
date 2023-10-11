@@ -38,9 +38,6 @@ node_modules
 target/classes
 target/maven-status
 
-# Do not ignore 'sockets' config for macos
-!client_flutter/macos/Runner/Release.entitlements
-
 # Dart
 .dart_tool
 android
