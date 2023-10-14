@@ -48,6 +48,15 @@ class _LayoutConnectedState extends State<LayoutConnected> {
                   style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.w400),
                 ),
+                const Text(
+                  ", with ID: ",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w200),
+                ),
+                Text(
+                  "${appData.mySocketId}",
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.w400),
+                ),
                 Expanded(child: Container()),
                 SizedBox(
                   width: 140,

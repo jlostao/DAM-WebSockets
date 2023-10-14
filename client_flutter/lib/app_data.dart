@@ -87,8 +87,12 @@ class AppData with ChangeNotifier {
             clients.remove(data['id']);
             messages += "Disconnected client: ${data['id']}\n";
             break;
+          case 'private':
+            messages +=
+                "Private message from '${data['from']}': ${data['value']}\n";
+            break;
           default:
-            messages += "Message: ${data['from']}: ${data['value']}\n";
+            messages += "Message from '${data['from']}': ${data['value']}\n";
             break;
         }
 

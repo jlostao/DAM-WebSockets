@@ -25,9 +25,15 @@ class WidgetSelectableListState extends State<WidgetSelectableList> {
           },
           child: Container(
             color: appData.selectedClientIndex == index
-                ? const Color.fromARGB(255, 52, 191, 255)
+                ? const Color.fromARGB(255, 20, 181, 255)
                 : null,
-            child: Text(client),
+            child: Text(client,
+                style: TextStyle(
+                    color: appData.selectedClientIndex == index
+                        ? const Color.fromARGB(255, 255, 255, 255)
+                        : null,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400)),
           ),
         );
       },
