@@ -25,6 +25,7 @@ class AppData with ChangeNotifier {
   String? mySocketId;
   List<String> clients = [];
   String selectedClient = "";
+  int? selectedClientIndex;
   String messages = "";
 
   AppData() {
@@ -122,11 +123,30 @@ class AppData with ChangeNotifier {
     _channel!.sink.close();
   }
 
+  selectClient(int index) {
+    if (selectedClientIndex != index) {
+      selectedClientIndex = index;
+      selectedClient = clients[index];
+    } else {
+      selectedClientIndex = null;
+      selectedClient = "";
+    }
+    notifyListeners();
+  }
+
   refreshClientsList() {
     final message = {
       'type': 'list',
     };
     _channel!.sink.add(jsonEncode(message));
+  }
+
+  send(String msg) {
+    if (selectedClientIndex == null) {
+      broadcastMessage(msg);
+    } else {
+      privateMessage(msg);
+    }
   }
 
   broadcastMessage(String msg) {

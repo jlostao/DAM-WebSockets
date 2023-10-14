@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import 'app_data.dart';
+import 'widget_selectable_list.dart';
 
 class LayoutConnected extends StatefulWidget {
   const LayoutConnected({Key? key}) : super(key: key);
@@ -10,12 +11,21 @@ class LayoutConnected extends StatefulWidget {
 }
 
 class _LayoutConnectedState extends State<LayoutConnected> {
+  final ScrollController _scrollController = ScrollController();
   final _messageController = TextEditingController();
   final FocusNode _messageFocusNode = FocusNode();
 
   @override
   Widget build(BuildContext context) {
     AppData appData = Provider.of<AppData>(context);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
 
     return CupertinoPageScaffold(
         navigationBar: const CupertinoNavigationBar(
@@ -64,29 +74,31 @@ class _LayoutConnectedState extends State<LayoutConnected> {
                   const SizedBox(width: 8),
                   Expanded(
                       flex: 2,
-                      child: ListView.builder(
-                          primary: false,
-                          padding: EdgeInsets.zero,
-                          itemCount: 1,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Text(
-                              appData.messages,
-                              style: const TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.w200),
-                            );
-                          })),
+                      child: MediaQuery.removePadding(
+                          context: context,
+                          removeTop: true,
+                          child: ListView.builder(
+                              controller: _scrollController,
+                              primary: false,
+                              padding: EdgeInsets.only(
+                                  top: -MediaQuery.of(context).padding.top),
+                              itemCount: 1,
+                              itemBuilder: (BuildContext context, int index) {
+                                return Text(
+                                  appData.messages,
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w200),
+                                );
+                              }))),
                   const SizedBox(width: 8),
                   Container(
                       color: const Color.fromRGBO(240, 240, 240, 1),
                       width: 142,
-                      child: ListView.builder(
-                        itemCount: appData.clients.length,
-                        itemBuilder: (context, index) {
-                          final client = appData.clients[index];
-                          return Text(
-                              client); // Afegeix el Text com a fill del ListView
-                        },
-                      )),
+                      child: MediaQuery.removePadding(
+                          context: context,
+                          removeTop: true,
+                          child: WidgetSelectableList())),
                   const SizedBox(width: 8),
                 ],
               ),
@@ -105,7 +117,7 @@ class _LayoutConnectedState extends State<LayoutConnected> {
                     controller: _messageController,
                     focusNode: _messageFocusNode,
                     onSubmitted: (value) {
-                      appData.broadcastMessage(_messageController.text);
+                      appData.send(_messageController.text);
                       _messageController.text = "";
                       FocusScope.of(context).requestFocus(_messageFocusNode);
                     },
@@ -117,13 +129,15 @@ class _LayoutConnectedState extends State<LayoutConnected> {
                   height: 32,
                   child: CupertinoButton.filled(
                     onPressed: () {
-                      appData.broadcastMessage(_messageController.text);
+                      appData.send(_messageController.text);
                       _messageController.text = "";
                       FocusScope.of(context).requestFocus(_messageFocusNode);
                     },
                     padding: EdgeInsets.zero,
                     child: Text(
-                      appData.selectedClient == "" ? "Broadcast" : "Send",
+                      appData.selectedClientIndex == null
+                          ? "Broadcast"
+                          : "Send",
                       style: const TextStyle(fontSize: 14),
                     ),
                   ),
