@@ -10,17 +10,6 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.enums.ReadyState;
 import org.json.JSONObject;
 
-/*
-    Examples d'instruccions:
-
-    exit                > Exit the program
-    reconnect           > Reconnect to the server
-    list                > Get list of clients
-    to(6a2)message      > Send a private message to a client
-    broadcast message   > Send a message to everyone
-    
- */
-
 public class ChatClient {
     private Scanner sc = new Scanner(System.in);
     private LinkedList<String> _last5Messages = new LinkedList<>();
@@ -78,10 +67,10 @@ public class ChatClient {
         try {
             client = new SocketsClient(
                 new URI(location), 
-                (ServerHandshake handshake) -> { this.onMessage("Connection opened"); },
-                (String message) -> { this.onMessage(message); },
-                (JSONObject closeInfo) -> { this.onMessage("Connection closed"); },
-                (Exception ex) -> { this.onMessage("Error: " + ex.getMessage()); }
+                (ServerHandshake handshake) ->  { this.onMessage("Connection opened"); },
+                (String message) ->             { this.onMessage(message); },
+                (JSONObject closeInfo) ->       { this.onMessage("Connection closed"); },
+                (Exception ex) ->               { this.onMessage("Error: " + ex.getMessage()); }
             );
             client.connect();
         } catch (URISyntaxException e) {
@@ -126,8 +115,7 @@ public class ChatClient {
     }
 
     private void onMessage(String message) {
-        System.out.println("Message received: " + message);
-        _last5Messages.add("Message received: " + message);
+        _last5Messages.add("Message received > " + message);
         if (_last5Messages.size() > 5) {
             _last5Messages.removeFirst();
         }
