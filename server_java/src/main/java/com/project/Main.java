@@ -229,8 +229,6 @@ public class Main extends WebSocketServer {
     }
 
     public WebSocket getClientById (String clientId) {
-        int length = this.getConnections().size();
-
         for (WebSocket ws : this.getConnections()) {
             String wsId = getConnectionId(ws);
             if (clientId.compareTo(wsId) == 0) {

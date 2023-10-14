@@ -62,7 +62,6 @@ public class Client extends WebSocketClient {
             } else if (text.startsWith("broadcast ")) {
                 int endIdx = text.indexOf(" ");
                 if (endIdx > -1) {
-                    String destId = text.substring(3, endIdx);
                     String msg = text.substring(endIdx + 1);
 
                     JSONObject obj = new JSONObject();
