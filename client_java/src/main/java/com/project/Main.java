@@ -23,6 +23,8 @@ import org.json.JSONObject;
 
 public class Main {
     private static Scanner sc = new Scanner(System.in);
+    private static LinkedList<String> _last5Messages = new LinkedList<>();
+    private static SocketsClient client;
 
     public static void main(String[] args) {
 
@@ -30,11 +32,11 @@ public class Main {
         String host = "localhost";
         String location = "ws://" + host + ":" + port;
 
-        SocketsClient client = getClient(location);
+        client = getClient(location);
 
         boolean running = true;
         while (running) {
-            displayPrompt(client);
+            displayPrompt();
             String text = sc.nextLine();
             if (text.equalsIgnoreCase("exit")) {
                 running = false;
@@ -72,11 +74,24 @@ public class Main {
         if (client != null) { client.close(); }
     }
 
-    public static void displayPrompt(SocketsClient client) {
+    static public SocketsClient getClient(String location) {
+        SocketsClient client = null;
+
+        try {
+            client = new SocketsClient(new URI(location), (String message) -> { Main.onMessage(message); });
+            client.connect();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            System.out.println("Error: " + location + " is not a valid WebSocket URI");
+        }
+
+        return client;
+    }
+
+    public static void displayPrompt() {
         clearConsole();
         System.out.println("Connection: " + client.getReadyState());
-        LinkedList<String> last5Messages = client.getLast5Messages();
-        for (String msg : last5Messages) {
+        for (String msg : _last5Messages) {
             System.out.println(msg);
         }
         System.out.print("Type a message (list, exit, to(id)message, broadcast message): ");
@@ -102,21 +117,17 @@ public class Main {
         }
     }
 
-    static public SocketsClient getClient(String location) {
-        SocketsClient client = null;
-
-        try {
-            client = new SocketsClient(new URI(location));
-            client.connect();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            System.out.println("Error: " + location + " is not a valid WebSocket URI");
-        }
-
-        return client;
-    }
-
     static public boolean isConnected (SocketsClient client) {
         return client.getReadyState() == ReadyState.OPEN;
+    }
+
+    @SuppressWarnings("unused")
+    static private void onMessage(String message) {
+        System.out.println("Message received: " + message);
+        _last5Messages.add("Message received: " + message);
+        if (_last5Messages.size() > 5) {
+            _last5Messages.removeFirst();
+        }
+        displayPrompt();
     }
 }

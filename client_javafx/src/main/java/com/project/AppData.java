@@ -18,12 +18,11 @@ public class AppData {
     private AppSocketClient socketClient;
     private String ip = "localhost";
     private String port = "8888";
-    private String messages = "";
 
     private AppData() {
         try {
             URI uri = new URI("ws://" + ip + ":" + port);
-            socketClient = new AppSocketClient(uri, new Draft_6455(), this);
+            socketClient = new AppSocketClient(uri);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }

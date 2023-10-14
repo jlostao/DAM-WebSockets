@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.Scanner;
+import java.util.function.Consumer;
 
 import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
@@ -14,20 +15,16 @@ import org.json.JSONObject;
 
 public class SocketsClient extends WebSocketClient {
 
-    private LinkedList<String> _last5Messages;
+    private Consumer<String> callBack;
 
-    public SocketsClient(URI uri) {
+    public SocketsClient(URI uri, Consumer<String> onMessage) {
         super(uri, (Draft) new Draft_6455());
-        _last5Messages = new LinkedList<>();
+        this.callBack = onMessage;
     }
 
     @Override
     public void onMessage(String message) {
-        _last5Messages.add("Message received: " + message);
-        if (_last5Messages.size() > 5) {
-            _last5Messages.removeFirst();
-        }
-        Main.displayPrompt(this);
+        callBack.accept(message);
     }
 
     @Override
@@ -39,13 +36,8 @@ public class SocketsClient extends WebSocketClient {
         System.out.println("Disconnected from: " + getURI());
     }
     
-
     @Override
     public void onError(Exception ex) {
         System.out.println("WebSocket connection error.");
-    }
-
-    public LinkedList<String> getLast5Messages() {
-        return _last5Messages;
     }
 }
