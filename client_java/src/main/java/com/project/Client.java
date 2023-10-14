@@ -12,7 +12,9 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.enums.ReadyState;
 import org.json.JSONObject;
 
-public class Main {
+public class Client extends WebSocketClient {
+    public boolean running = true;
+    public LinkedList<String> last5Messages = new LinkedList<>();
     private static Scanner sc = new Scanner(System.in);
 
     public static void main(String[] args) {
@@ -63,6 +65,15 @@ public class Main {
         if (client != null) { client.close(); }
     }
 
+    @Override
+    public void onMessage(String message) {
+        last5Messages.add("Message received: " + message);
+        if (last5Messages.size() > 5) {
+            last5Messages.removeFirst();
+        }
+        displayPrompt(this);
+    }
+
     public static void displayPrompt(Client client) {
         clearConsole();
         System.out.println("Connection: " + client.getReadyState());
@@ -92,6 +103,10 @@ public class Main {
         }
     }
 
+    public Client(URI uri, Draft draft) {
+        super(uri, draft);
+    }
+
     static public Client getClient(String location) {
         Client client = null;
 
@@ -106,7 +121,29 @@ public class Main {
         return client;
     }
 
+    @Override
+    public void onOpen(ServerHandshake handshake) {
+    }
+
+    @Override
+    public void onClose(int code, String reason, boolean remote) {
+        System.out.println("Disconnected from: " + getURI());
+    }
+    
+
+    @Override
+    public void onError(Exception ex) {
+        System.out.println("WebSocket connection error.");
+    }
+
+
     static public boolean isConnected (Client client) {
         return client.getReadyState() == ReadyState.OPEN;
     }
+
+    public void reconnect() {
+        System.out.println("Trying to reconnect...");
+        close();
+        connect();
+    }  
 }
