@@ -2,14 +2,17 @@ package com.project;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetSocketAddress;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
+import java.util.Enumeration;
+import java.net.InetSocketAddress;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
-import org.json.JSONArray;
 import org.json.JSONObject;
+
 
 // Tutorials: http://tootallnate.github.io/Java-WebSocket/
 
@@ -39,13 +42,14 @@ public class Main extends WebSocketServer {
 
         int port = 8888; 
         boolean running = true;
+        String localIp = getLocalIPAddress();
 
         // Deshabilitar SSLv3 per clients Android
         java.lang.System.setProperty("jdk.tls.client.protocols", "TLSv1,TLSv1.1,TLSv1.2");
 
         Main socket = new Main(port);
         socket.start();
-        System.out.println("WebSockets server running at port: " + socket.getPort());
+        System.out.println("WebSockets server running at: ws://" + localIp + ":" + socket.getPort());
 
         while (running) {
             String line = in.readLine();
@@ -61,6 +65,30 @@ public class Main extends WebSocketServer {
 
     public Main (int port) throws UnknownHostException {
         super(new InetSocketAddress(port));
+    }
+
+    public static String getLocalIPAddress() throws SocketException, UnknownHostException {
+        
+        String localIp = "";
+        Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
+        while (networkInterfaces.hasMoreElements()) {
+            NetworkInterface ni = networkInterfaces.nextElement();
+            Enumeration<InetAddress> inetAddresses = ni.getInetAddresses();
+            while (inetAddresses.hasMoreElements()) {
+                InetAddress ia = inetAddresses.nextElement();
+                if (!ia.isLinkLocalAddress() && !ia.isLoopbackAddress() && ia.isSiteLocalAddress()) {
+                    System.out.println(ni.getDisplayName() + ": " + ia.getHostAddress());
+                    localIp = ia.getHostAddress();
+                    // Si hi ha múltiples direccions IP, es queda amb la última
+                }
+            }
+        }
+
+        // Si no troba cap direcció IP torna la loopback
+        if (localIp.compareToIgnoreCase("") == 0) {
+            localIp = InetAddress.getLocalHost().getHostAddress();
+        }
+        return localIp;
     }
 
     // Quan un client es connecta

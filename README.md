@@ -61,10 +61,11 @@ flutter run -d linux
 
 ## Nota per Flutter i macOS
 
-Per activar l'entrada i sortida de dades WebSocket a Flutter de macOS, cal tenir l'arxiu:
+Per activar l'entrada i sortida de dades WebSocket a Flutter de macOS, cal tenir els arxius:
 
 ```bash
 client_flutter/macos/Runner/DebugProfile.entitlements
+client_flutter/macos/Runner/Release.entitlements
 ```
 
 Amb aquest codi:
