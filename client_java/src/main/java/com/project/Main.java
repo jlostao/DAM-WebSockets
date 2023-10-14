@@ -6,8 +6,6 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 import org.java_websocket.client.WebSocketClient;
-import org.java_websocket.drafts.Draft;
-import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.enums.ReadyState;
 import org.json.JSONObject;
@@ -15,18 +13,16 @@ import org.json.JSONObject;
 /*
     Examples d'instruccions:
 
-    exit > Exit the program
-    reconnect > Reconnect to the server
-    list > Get list of clients
-    to(6a2)message > Send a private message to a client
-    broadcast message > Send a message to everyone
+    exit                > Exit the program
+    reconnect           > Reconnect to the server
+    list                > Get list of clients
+    to(6a2)message      > Send a private message to a client
+    broadcast message   > Send a message to everyone
     
  */
 
-public class Client extends WebSocketClient {
-    private boolean running = true;
+public class Main {
     private static Scanner sc = new Scanner(System.in);
-    private LinkedList<String> last5Messages = new LinkedList<>();
 
     public static void main(String[] args) {
 
@@ -34,13 +30,14 @@ public class Client extends WebSocketClient {
         String host = "localhost";
         String location = "ws://" + host + ":" + port;
 
-        Client client = getClient(location);
+        SocketsClient client = getClient(location);
 
-        while (client.running) {
+        boolean running = true;
+        while (running) {
             displayPrompt(client);
             String text = sc.nextLine();
             if (text.equalsIgnoreCase("exit")) {
-                client.running = false;
+                running = false;
                 client.close();
                 break;
             } else if (text.equalsIgnoreCase("list")) {
@@ -75,19 +72,11 @@ public class Client extends WebSocketClient {
         if (client != null) { client.close(); }
     }
 
-    @Override
-    public void onMessage(String message) {
-        last5Messages.add("Message received: " + message);
-        if (last5Messages.size() > 5) {
-            last5Messages.removeFirst();
-        }
-        displayPrompt(this);
-    }
-
-    public static void displayPrompt(Client client) {
+    public static void displayPrompt(SocketsClient client) {
         clearConsole();
         System.out.println("Connection: " + client.getReadyState());
-        for (String msg : client.last5Messages) {
+        LinkedList<String> last5Messages = client.getLast5Messages();
+        for (String msg : last5Messages) {
             System.out.println(msg);
         }
         System.out.print("Type a message (list, exit, to(id)message, broadcast message): ");
@@ -113,15 +102,11 @@ public class Client extends WebSocketClient {
         }
     }
 
-    public Client(URI uri, Draft draft) {
-        super(uri, draft);
-    }
-
-    static public Client getClient(String location) {
-        Client client = null;
+    static public SocketsClient getClient(String location) {
+        SocketsClient client = null;
 
         try {
-            client = new Client(new URI(location), (Draft) new Draft_6455());
+            client = new SocketsClient(new URI(location));
             client.connect();
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -131,29 +116,7 @@ public class Client extends WebSocketClient {
         return client;
     }
 
-    @Override
-    public void onOpen(ServerHandshake handshake) {
-    }
-
-    @Override
-    public void onClose(int code, String reason, boolean remote) {
-        System.out.println("Disconnected from: " + getURI());
-    }
-    
-
-    @Override
-    public void onError(Exception ex) {
-        System.out.println("WebSocket connection error.");
-    }
-
-
-    static public boolean isConnected (Client client) {
+    static public boolean isConnected (SocketsClient client) {
         return client.getReadyState() == ReadyState.OPEN;
     }
-
-    public void reconnect() {
-        System.out.println("Trying to reconnect...");
-        close();
-        connect();
-    }  
 }
