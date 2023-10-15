@@ -2,6 +2,7 @@ package com.project;
 
 import java.util.List;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -106,6 +107,8 @@ public class CtrlLayoutConnected {
     }
 
     public void updateClientList(List<String> clients) {
-        clientsList.setItems(FXCollections.observableArrayList(clients));
+        Platform.runLater(() -> {
+            clientsList.setItems(FXCollections.observableArrayList(clients));
+        });
     }
 }
