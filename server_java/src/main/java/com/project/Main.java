@@ -1,8 +1,6 @@
 package com.project;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -31,35 +29,21 @@ import java.util.Enumeration;
 
 public class Main {
 
-    static BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
     public static void main (String[] args) throws InterruptedException, IOException {
 
         int port = 8888; 
         String localIp = getLocalIPAddress();
+        System.out.println("Local server IP: " + localIp);
 
         // Deshabilitar SSLv3 per clients Android
         java.lang.System.setProperty("jdk.tls.client.protocols", "TLSv1,TLSv1.1,TLSv1.2");
 
-        SocketsServer server = new SocketsServer(port);
-        server.start();
-        System.out.println("WebSockets server running at: ws://" + localIp + ":" + server.getPort());
-
-        boolean running = true;
-        while (running) {
-            String line = in.readLine();
-            server.broadcast(line);
-            if (line.equals("exit")) {
-                running = false;
-            }
-        }    
-
-        System.out.println("Stopping server");
-        server.stop(1000);
+        ChatServer server = new ChatServer(port);
+        server.runServerBucle();
     }
 
     public static String getLocalIPAddress() throws SocketException, UnknownHostException {
-        
         String localIp = "";
         Enumeration<NetworkInterface> networkInterfaces = NetworkInterface.getNetworkInterfaces();
         while (networkInterfaces.hasMoreElements()) {

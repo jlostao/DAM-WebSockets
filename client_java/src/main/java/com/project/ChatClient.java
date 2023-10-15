@@ -6,31 +6,63 @@ import java.util.LinkedList;
 import java.util.Scanner;
 
 import org.java_websocket.handshake.ServerHandshake;
+import org.java_websocket.client.WebSocketClient;
+import org.java_websocket.drafts.Draft;
+import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.enums.ReadyState;
 import org.json.JSONObject;
 
-public class ChatClient {
+public class ChatClient extends WebSocketClient {
     private Scanner sc = new Scanner(System.in);
     private LinkedList<String> _last5Messages = new LinkedList<>();
-    private UtilsSocketsClient client;
 
-    public ChatClient(String location) {
-        this.client = getClient(location);
+    public ChatClient(URI uri) throws URISyntaxException {
+        super(uri, (Draft) new Draft_6455());
     }
 
-    public void start() {
+    @Override
+    public void onOpen(ServerHandshake handshakedata) {
+        // Quan el client es connecta
+        this.onMessage("Connection opened");
+    }
+
+    @Override
+    public void onMessage(String message) {
+        // Quan el client rep un missatge
+        _last5Messages.add("Message received > " + message);
+        if (_last5Messages.size() > 5) {
+            _last5Messages.removeFirst();
+        }
+        displayPrompt();
+    }
+
+    @Override
+    public void onClose(int code, String reason, boolean remote) {
+        // Quan el client es desconnecta
+        this.onMessage("Connection closed");
+    }
+
+    @Override
+    public void onError(Exception ex) {
+        // Quan hi ha un error
+        this.onMessage("Error: " + ex.getMessage());
+    }
+
+    public void runClientBucle() {
         boolean running = true;
+
+        connect();
         while (running) {
             displayPrompt();
             String text = sc.nextLine();
             if (text.equalsIgnoreCase("exit")) {
                 running = false;
-                client.close();
+                close();
                 break;
             } else if (text.equalsIgnoreCase("list")) {
                 JSONObject obj = new JSONObject();
                 obj.put("type", "list");
-                client.send(obj.toString());
+                send(obj.toString());
             } else if (text.startsWith("to(")) {
                 int endIdx = text.indexOf(")");
                 if (endIdx > -1) {
@@ -41,7 +73,7 @@ public class ChatClient {
                     obj.put("type", "private");
                     obj.put("destination", destId);
                     obj.put("value", msg);
-                    client.send(obj.toString());
+                    send(obj.toString());
                 }
             } else if (text.startsWith("broadcast ")) {
                 int endIdx = text.indexOf(" ");
@@ -51,37 +83,16 @@ public class ChatClient {
                     JSONObject obj = new JSONObject();
                     obj.put("type", "broadcast");
                     obj.put("value", msg);
-                    client.send(obj.toString());
+                    send(obj.toString());
                 }
             }
         }
-
-        if (client != null) { client.close(); }
-    }
-
-    public UtilsSocketsClient getClient(String location) {
-        UtilsSocketsClient client = null;
-
-        try {
-            client = new UtilsSocketsClient(
-                new URI(location), 
-                (ServerHandshake handshake) ->  { this.onMessage("Connection opened"); },
-                (String message) ->             { this.onMessage(message); },
-                (JSONObject closeInfo) ->       { this.onMessage("Connection closed"); },
-                (Exception ex) ->               { this.onMessage("Error: " + ex.getMessage()); }
-            );
-            client.connect();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-            System.out.println("Error: " + location + " is not a valid WebSocket URI");
-        }
-
-        return client;
+        close();
     }
 
     public void displayPrompt() {
         clearConsole();
-        System.out.println("Connection: " + client.getReadyState());
+        System.out.println("Connection: " + getReadyState());
         for (String msg : _last5Messages) {
             System.out.println(msg);
         }
@@ -108,15 +119,7 @@ public class ChatClient {
         }
     }
 
-    public boolean isConnected (UtilsSocketsClient client) {
-        return client.getReadyState() == ReadyState.OPEN;
-    }
-
-    private void onMessage(String message) {
-        _last5Messages.add("Message received > " + message);
-        if (_last5Messages.size() > 5) {
-            _last5Messages.removeFirst();
-        }
-        displayPrompt();
+    public boolean isConnected () {
+        return (getReadyState() == ReadyState.OPEN);
     }
 }

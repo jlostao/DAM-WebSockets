@@ -1,5 +1,8 @@
 package com.project;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /*
     Examples d'instruccions:
 
@@ -17,7 +20,12 @@ public class Main {
         String host = "localhost";
         String location = "ws://" + host + ":" + port;
 
-        ChatClient chatClient = new ChatClient(location);
-        chatClient.start();
+        ChatClient chatClient;
+        try {
+            chatClient = new ChatClient(new URI(location));
+            chatClient.runClientBucle();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
     }
 }

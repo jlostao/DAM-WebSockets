@@ -7,16 +7,21 @@ import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.drafts.Draft;
 import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
-import org.json.JSONObject;
 
-public class UtilsSocketsClient extends WebSocketClient {
+public class AppSocketsClient extends WebSocketClient {
 
     private Consumer<ServerHandshake> callBackOnOpen;
     private Consumer<String> callBackOnMessage;
-    private Consumer<JSONObject> callBackOnClose;
+    private Consumer<OnCloseObject> callBackOnClose;
     private Consumer<Exception> callBackOnError;
 
-    public UtilsSocketsClient(URI uri, Consumer<ServerHandshake> onOpen, Consumer<String> onMessage, Consumer<JSONObject> onClose, Consumer<Exception> onError) {
+    public class OnCloseObject {
+        public int code;
+        public String reason;
+        public boolean remote;
+    }
+
+    public AppSocketsClient(URI uri, Consumer<ServerHandshake> onOpen, Consumer<String> onMessage, Consumer<OnCloseObject> onClose, Consumer<Exception> onError) {
         super(uri, (Draft) new Draft_6455());
         this.callBackOnOpen = onOpen;
         this.callBackOnMessage = onMessage;
@@ -36,11 +41,11 @@ public class UtilsSocketsClient extends WebSocketClient {
 
     @Override
     public void onClose(int code, String reason, boolean remote) {
-        JSONObject closeInfo = new JSONObject();
-        closeInfo.put("code", code);
-        closeInfo.put("reason", reason);
-        closeInfo.put("remote", remote);
-        callBackOnClose.accept(closeInfo);
+        OnCloseObject obj = new OnCloseObject();
+        obj.code = code;
+        obj.reason = reason;
+        obj.remote = remote;
+        callBackOnClose.accept(obj);
     }
     
     @Override

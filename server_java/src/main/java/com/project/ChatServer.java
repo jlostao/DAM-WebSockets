@@ -1,21 +1,36 @@
 package com.project;
 
-import java.net.UnknownHostException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.json.JSONObject;
 
-public class SocketsServer extends WebSocketServer {
+public class ChatServer extends WebSocketServer {
 
-    public SocketsServer (int port) throws UnknownHostException {
+    static BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+
+    public ChatServer (int port) {
         super(new InetSocketAddress(port));
     }
 
     @Override
-    public void onOpen (WebSocket conn, ClientHandshake handshake) {
+    public void onStart() {
+        // Quan el servidor s'inicia
+        String host = getAddress().getAddress().getHostAddress();
+        int port = getAddress().getPort();
+        System.out.println("WebSockets server running at: ws://" + host + ":" + port);
+        System.out.println("Type 'exit' to stop and exit server.");
+        setConnectionLostTimeout(0);
+        setConnectionLostTimeout(100);
+    }
 
+    @Override
+    public void onOpen(WebSocket conn, ClientHandshake handshake) {
+        // Quan un client es connecta
         String clientId = getConnectionId(conn);
 
         // Saludem personalment al nou client
@@ -47,10 +62,9 @@ public class SocketsServer extends WebSocketServer {
         System.out.println("New client (" + clientId + "): " + host);
     }
 
-    // Quan un client es desconnecta
     @Override
-    public void onClose (WebSocket conn, int code, String reason, boolean remote) {
-
+    public void onClose(WebSocket conn, int code, String reason, boolean remote) {
+        // Quan un client es desconnecta
         String clientId = getConnectionId(conn);
 
         // Informem a tothom que el client s'ha desconnectat
@@ -64,12 +78,10 @@ public class SocketsServer extends WebSocketServer {
         System.out.println("Client disconnected '" + clientId + "'");
     }
 
-    // Quan el servidor rep un missatge d'un client
     @Override
-    public void onMessage (WebSocket conn, String message) {
-
+    public void onMessage(WebSocket conn, String message) {
+        // Quan arriba un missatge
         String clientId = getConnectionId(conn);
-
         try {
             JSONObject objRequest = new JSONObject(message);
             String type = objRequest.getString("type");
@@ -112,16 +124,28 @@ public class SocketsServer extends WebSocketServer {
     }
 
     @Override
-    public void onError (WebSocket conn, Exception ex) {
+    public void onError(WebSocket conn, Exception ex) {
+        // Quan hi ha un error
         ex.printStackTrace();
     }
 
-    @Override
-    public void onStart () {
-        // S'inicia el servidor
-        System.out.println("Type 'exit' to stop and exit server.");
-        setConnectionLostTimeout(0);
-        setConnectionLostTimeout(100);
+    public void runServerBucle () {
+        boolean running = true;
+        try {
+            System.out.println("Starting server");
+            start();
+            while (running) {
+                String line;
+                line = in.readLine();
+                if (line.equals("exit")) {
+                    running = false;
+                }
+            } 
+            System.out.println("Stopping server");
+            stop(1000);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }  
     }
 
     public void sendList (WebSocket conn) {
@@ -138,11 +162,11 @@ public class SocketsServer extends WebSocketServer {
     }
 
     public String[] getClients () {
-        int length = this.getConnections().size();
+        int length = getConnections().size();
         String[] clients = new String[length];
         int cnt = 0;
 
-        for (WebSocket ws : this.getConnections()) {
+        for (WebSocket ws : getConnections()) {
             clients[cnt] = getConnectionId(ws);               
             cnt++;
         }
@@ -150,7 +174,7 @@ public class SocketsServer extends WebSocketServer {
     }
 
     public WebSocket getClientById (String clientId) {
-        for (WebSocket ws : this.getConnections()) {
+        for (WebSocket ws : getConnections()) {
             String wsId = getConnectionId(ws);
             if (clientId.compareTo(wsId) == 0) {
                 return ws;

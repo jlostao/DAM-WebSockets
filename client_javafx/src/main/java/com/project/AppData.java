@@ -3,6 +3,8 @@ package com.project;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONObject;
 
+import com.project.AppSocketsClient.OnCloseObject;
+
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
 
@@ -19,7 +21,7 @@ import java.util.List;
 public class AppData {
 
     private static final AppData INSTANCE = new AppData();
-    private UtilsSocketsClient socketClient;
+    private AppSocketsClient socketClient;
     private String ip = "localhost";
     private String port = "8888";
     private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
@@ -67,15 +69,12 @@ public class AppData {
     public void connectToServer() {
         try {
             URI location = new URI("ws://" + ip + ":" + port);
-            socketClient = new UtilsSocketsClient(
+            socketClient = new AppSocketsClient(
                     location,
-                    (ServerHandshake handshake) -> { 
-                        System.out.println("Handshake: " + handshake.getHttpStatusMessage());
-                        connectionStatus = ConnectionStatus.CONNECTED; 
-                    },
-                    (String message) -> { this.onMessage(message); },
-                    (JSONObject closeInfo) -> { },
-                    (Exception ex) -> { }
+                    (ServerHandshake handshake) ->  { this.onOpen(handshake);},
+                    (String message) ->             { this.onMessage(message); },
+                    (OnCloseObject closeInfo) ->    { this.onClose(closeInfo); },
+                    (Exception ex) ->               { this.onError(ex); }
             );
         } catch (URISyntaxException e) {
             e.printStackTrace();
@@ -98,14 +97,17 @@ public class AppData {
 
     public void disconnectFromServer() {
         connectionStatus = ConnectionStatus.DISCONNECTING;
-        socketClient.close();
         UtilsViews.setViewAnimating("Disconnecting");
         PauseTransition pause = new PauseTransition(Duration.seconds(1));
         pause.setOnFinished(event -> {
-            connectionStatus = ConnectionStatus.DISCONNECTED;
-            UtilsViews.setViewAnimating("Disconnected");
+            socketClient.close();
         });
         pause.play();
+    }
+
+    private void onOpen (ServerHandshake handshake) {
+        System.out.println("Handshake: " + handshake.getHttpStatusMessage());
+        connectionStatus = ConnectionStatus.CONNECTED; 
     }
 
     private void onMessage(String message) {
@@ -162,6 +164,15 @@ public class AppData {
             CtrlLayoutConnected ctrlConnected = (CtrlLayoutConnected) UtilsViews.getController("Connected");
             ctrlConnected.updateMessages(messages.toString());        
         }
+    }
+
+    public void onClose(OnCloseObject closeInfo) {
+        connectionStatus = ConnectionStatus.DISCONNECTED;
+        UtilsViews.setViewAnimating("Disconnected");
+    }
+
+    public void onError(Exception ex) {
+        System.out.println("Error: " + ex.getMessage());
     }
 
     public void refreshClientsList() {
