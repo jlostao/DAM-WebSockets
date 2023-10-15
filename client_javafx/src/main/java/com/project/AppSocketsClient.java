@@ -47,22 +47,4 @@ public class AppSocketsClient extends WebSocketClient {
     public void onError(Exception ex) {
         callBackOnError.accept(ex);
     }
-
-    /*
-     * 
-    public void reconnect () {
-        System.out.println("WS reconnecting to: " + this.location);
-
-        try {
-            TimeUnit.SECONDS.sleep(2);
-        } catch (InterruptedException e) { e.printStackTrace(); }
-
-        Consumer<String> oldCallBack = this.onMessageCallBack;
-        String oldLocation = this.location;
-        sharedInstance.close();
-        sharedInstance = null;
-        getSharedInstance(oldLocation);
-        sharedInstance.onMessage(oldCallBack);
-    }
-     */
 }
