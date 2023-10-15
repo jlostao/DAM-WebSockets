@@ -5,7 +5,6 @@ import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.Scanner;
 
-import org.java_websocket.client.WebSocketClient;
 import org.java_websocket.handshake.ServerHandshake;
 import org.java_websocket.enums.ReadyState;
 import org.json.JSONObject;
@@ -14,7 +13,6 @@ public class ChatClient {
     private Scanner sc = new Scanner(System.in);
     private LinkedList<String> _last5Messages = new LinkedList<>();
     private SocketsClient client;
-    private String location;
 
     public ChatClient(String location) {
         this.client = getClient(location);
