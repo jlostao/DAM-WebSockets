@@ -21,7 +21,7 @@
             "path": "server_java"
         },
         {
-            "name": "Server Node.js",
+            "name": "Server NodeJS",
             "path": "server_nodejs"
         }
     ],
