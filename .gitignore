@@ -38,6 +38,9 @@ node_modules
 target/classes
 target/maven-status
 
+/target/
+*.class
+
 # Dart
 .dart_tool
 android
