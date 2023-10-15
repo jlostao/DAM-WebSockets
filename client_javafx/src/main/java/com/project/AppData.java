@@ -4,8 +4,6 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONObject;
 
 import javafx.animation.PauseTransition;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.util.Duration;
 
 import java.net.InetAddress;
