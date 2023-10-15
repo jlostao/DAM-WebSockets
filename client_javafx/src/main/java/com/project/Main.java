@@ -1,34 +1,11 @@
 package com.project;
-import org.json.JSONObject;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
 public class Main extends Application {
-
-    public static UtilsWS socketClient;
-
-    public static int port = 3000;
-    public static String protocol = "http";
-    public static String host = "localhost";
-    public static String protocolWS = "ws";
-
-    // Exemple de configuració per Railway
-    // public static int port = 443;
-    // public static String protocol = "https";
-    // public static String host = "server-production-46ef.up.railway.app";
-    // public static String protocolWS = "wss";
-
-    // Camps JavaFX a modificar
-    public static Label consoleName;
-    public static Label consoleDate;
-    public static Label consoleBrand;
-    public static ImageView imageView;
 
     public static void main(String[] args) {
 
@@ -39,18 +16,14 @@ public class Main extends Application {
     @Override
     public void start(Stage stage) throws Exception {
 
-        consoleName = new Label();
-        consoleDate = new Label();
-        consoleBrand = new Label();
-        imageView = new ImageView();
-
         final int windowWidth = 800;
         final int windowHeight = 600;
 
         UtilsViews.parentContainer.setStyle("-fx-font: 14 arial;");
-        UtilsViews.addView(getClass(), "ViewPost", "/assets/viewPost.fxml");
-        UtilsViews.addView(getClass(), "ViewSockets", "/assets/viewSockets.fxml");
-        UtilsViews.addView(getClass(), "ViewUpload", "/assets/viewUpload.fxml");
+        UtilsViews.addView(getClass(), "Disconnected", "/assets/layoutDisconnected.fxml");
+        UtilsViews.addView(getClass(), "Connecting", "/assets/layoutConnecting.fxml");
+        UtilsViews.addView(getClass(), "Disconnecting", "/assets/layoutDisconnecting.fxml");
+        UtilsViews.addView(getClass(), "Connected", "/assets/layoutConnected.fxml");
 
         Scene scene = new Scene(UtilsViews.parentContainer);
         
@@ -66,24 +39,11 @@ public class Main extends Application {
             Image icon = new Image("file:/icons/icon.png");
             stage.getIcons().add(icon);
         }
-
-        // Iniciar WebSockets
-        socketClient = UtilsWS.getSharedInstance(protocolWS + "://" + host + ":" + port);
-        socketClient.onMessage((response) -> {
-            
-            // JavaFX necessita que els canvis es facin des de el thread principal
-            Platform.runLater(()->{ 
-                // Fer aquí els canvis a la interficie
-                JSONObject msgObj = new JSONObject(response);
-                CtrlSockets ctrl = (CtrlSockets) UtilsViews.getController("ViewSockets");
-                ctrl.receiveMessage(msgObj);
-            });
-        });
     }
 
     @Override
     public void stop() { 
-        socketClient.close();
+        AppData.getInstance().disconnectFromServer();
         System.exit(1); // Kill all executor services
     }
 }
