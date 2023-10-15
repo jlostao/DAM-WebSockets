@@ -4,6 +4,8 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONObject;
 
 import javafx.animation.PauseTransition;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.util.Duration;
 
 import java.net.InetAddress;
@@ -86,8 +88,8 @@ public class AppData {
         PauseTransition pause = new PauseTransition(Duration.seconds(1));
         pause.setOnFinished(event -> {
             if (connectionStatus == ConnectionStatus.CONNECTED) {
-                CtrlLayoutConnected ctrlLayoutConnected = (CtrlLayoutConnected) UtilsViews.getController("Connected");
-                ctrlLayoutConnected.initUI();
+                CtrlLayoutConnected ctrlConnected = (CtrlLayoutConnected) UtilsViews.getController("Connected");
+                ctrlConnected.updateInfo();
                 UtilsViews.setViewAnimating("Connected");
             } else {
                 UtilsViews.setViewAnimating("Disconnected");
@@ -108,10 +110,6 @@ public class AppData {
         pause.play();
     }
 
-    public void send(String msg) {
-        socketClient.send(msg);
-    }
-
     private void onMessage(String message) {
         JSONObject data = new JSONObject(message);
 
@@ -126,6 +124,7 @@ public class AppData {
                 data.getJSONArray("list").forEach(item -> clients.add(item.toString()));
                 clients.remove(mySocketId);
                 messages.append("List of clients: ").append(data.getJSONArray("list")).append("\n");
+                updateClientList();
                 break;
             case "id":
                 mySocketId = data.getString("value");
@@ -135,6 +134,7 @@ public class AppData {
                 clients.add(data.getString("id"));
                 clients.remove(mySocketId);
                 messages.append("Connected client: ").append(data.getString("id")).append("\n");
+                updateClientList();
                 break;
             case "disconnected":
                 String removeId = data.getString("id");
@@ -143,6 +143,7 @@ public class AppData {
                 }
                 clients.remove(data.getString("id"));
                 messages.append("Disconnected client: ").append(data.getString("id")).append("\n");
+                updateClientList();
                 break;
             case "private":
                 messages.append("Private message from '")
@@ -159,12 +160,23 @@ public class AppData {
                         .append("\n");
                 break;
         }
+        if (connectionStatus == ConnectionStatus.CONNECTED) {
+            CtrlLayoutConnected ctrlConnected = (CtrlLayoutConnected) UtilsViews.getController("Connected");
+            ctrlConnected.updateMessages(messages.toString());        
+        }
     }
 
     public void refreshClientsList() {
         JSONObject message = new JSONObject();
         message.put("type", "list");
         socketClient.send(message.toString());
+    }
+
+    public void updateClientList() {
+        if (connectionStatus == ConnectionStatus.CONNECTED) {
+            CtrlLayoutConnected ctrlConnected = (CtrlLayoutConnected) UtilsViews.getController("Connected");
+            ctrlConnected.updateClientList(clients);
+        }
     }
 
     public void selectClient(int index) {
@@ -174,6 +186,18 @@ public class AppData {
         } else {
             selectedClientIndex = null;
             selectedClient = "";
+        }
+    }
+
+    public Integer getSelectedClientIndex() {
+        return selectedClientIndex;
+    }
+
+    public void send(String msg) {
+        if (selectedClientIndex == null) {
+            broadcastMessage(msg);
+        } else {
+            privateMessage(msg);
         }
     }
 

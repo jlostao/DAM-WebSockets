@@ -48,7 +48,7 @@
       <HBox alignment="CENTER_LEFT" layoutX="14.0" layoutY="560.0" prefHeight="26.0" prefWidth="704.0" spacing="10.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0">
          <Label text="Message: " />
          <TextField fx:id="messageField" onAction="#handleSend" HBox.hgrow="ALWAYS" /> 
-         <Button fx:id="sendButton" onAction="#handleSend" text="Send" />
+         <Button fx:id="sendButton" onAction="#handleSend" text="Broadcast" />
       </HBox>
    </children>
 </AnchorPane>

@@ -12,7 +12,7 @@ void main() async {
       WidgetsFlutterBinding.ensureInitialized();
       await WindowManager.instance.ensureInitialized();
       windowManager.waitUntilReadyToShow().then(showWindow);
-      //windowManager.setSize(const Size(300.0, 600.0));
+      //windowManager.setSize(const Size(800.0, 600.0));
     }
   } catch (e) {
     // ignore: avoid_print
