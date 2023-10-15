@@ -12,7 +12,7 @@ import org.json.JSONObject;
 public class ChatClient {
     private Scanner sc = new Scanner(System.in);
     private LinkedList<String> _last5Messages = new LinkedList<>();
-    private SocketsClient client;
+    private UtilsSocketsClient client;
 
     public ChatClient(String location) {
         this.client = getClient(location);
@@ -59,11 +59,11 @@ public class ChatClient {
         if (client != null) { client.close(); }
     }
 
-    public SocketsClient getClient(String location) {
-        SocketsClient client = null;
+    public UtilsSocketsClient getClient(String location) {
+        UtilsSocketsClient client = null;
 
         try {
-            client = new SocketsClient(
+            client = new UtilsSocketsClient(
                 new URI(location), 
                 (ServerHandshake handshake) ->  { this.onMessage("Connection opened"); },
                 (String message) ->             { this.onMessage(message); },
@@ -108,7 +108,7 @@ public class ChatClient {
         }
     }
 
-    public boolean isConnected (SocketsClient client) {
+    public boolean isConnected (UtilsSocketsClient client) {
         return client.getReadyState() == ReadyState.OPEN;
     }
 

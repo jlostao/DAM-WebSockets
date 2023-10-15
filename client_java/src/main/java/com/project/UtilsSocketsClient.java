@@ -9,14 +9,14 @@ import org.java_websocket.drafts.Draft_6455;
 import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONObject;
 
-public class SocketsClient extends WebSocketClient {
+public class UtilsSocketsClient extends WebSocketClient {
 
     private Consumer<ServerHandshake> callBackOnOpen;
     private Consumer<String> callBackOnMessage;
     private Consumer<JSONObject> callBackOnClose;
     private Consumer<Exception> callBackOnError;
 
-    public SocketsClient(URI uri, Consumer<ServerHandshake> onOpen, Consumer<String> onMessage, Consumer<JSONObject> onClose, Consumer<Exception> onError) {
+    public UtilsSocketsClient(URI uri, Consumer<ServerHandshake> onOpen, Consumer<String> onMessage, Consumer<JSONObject> onClose, Consumer<Exception> onError) {
         super(uri, (Draft) new Draft_6455());
         this.callBackOnOpen = onOpen;
         this.callBackOnMessage = onMessage;

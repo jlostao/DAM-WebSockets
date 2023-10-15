@@ -19,7 +19,7 @@ import java.util.List;
 public class AppData {
 
     private static final AppData INSTANCE = new AppData();
-    private AppSocketsClient socketClient;
+    private UtilsSocketsClient socketClient;
     private String ip = "localhost";
     private String port = "8888";
     private ConnectionStatus connectionStatus = ConnectionStatus.DISCONNECTED;
@@ -67,7 +67,7 @@ public class AppData {
     public void connectToServer() {
         try {
             URI location = new URI("ws://" + ip + ":" + port);
-            socketClient = new AppSocketsClient(
+            socketClient = new UtilsSocketsClient(
                     location,
                     (ServerHandshake handshake) -> { 
                         System.out.println("Handshake: " + handshake.getHttpStatusMessage());
