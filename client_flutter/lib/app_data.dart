@@ -19,7 +19,7 @@ class AppData with ChangeNotifier {
   String ip = "localhost";
   String port = "8888";
 
-  IOWebSocketChannel? _channel;
+  IOWebSocketChannel? _socketClient;
   ConnectionStatus connectionStatus = ConnectionStatus.disconnected;
 
   String? mySocketId;
@@ -55,8 +55,8 @@ class AppData with ChangeNotifier {
     // Simulate connection delay
     await Future.delayed(const Duration(seconds: 1));
 
-    _channel = IOWebSocketChannel.connect("ws://$ip:$port");
-    _channel!.stream.listen(
+    _socketClient = IOWebSocketChannel.connect("ws://$ip:$port");
+    _socketClient!.stream.listen(
       (message) {
         final data = jsonDecode(message);
 
@@ -124,7 +124,7 @@ class AppData with ChangeNotifier {
     // Simulate connection delay
     await Future.delayed(const Duration(seconds: 1));
 
-    _channel!.sink.close();
+    _socketClient!.sink.close();
   }
 
   selectClient(int index) {
@@ -142,7 +142,7 @@ class AppData with ChangeNotifier {
     final message = {
       'type': 'list',
     };
-    _channel!.sink.add(jsonEncode(message));
+    _socketClient!.sink.add(jsonEncode(message));
   }
 
   send(String msg) {
@@ -158,7 +158,7 @@ class AppData with ChangeNotifier {
       'type': 'broadcast',
       'value': msg,
     };
-    _channel!.sink.add(jsonEncode(message));
+    _socketClient!.sink.add(jsonEncode(message));
   }
 
   privateMessage(String msg) {
@@ -168,6 +168,6 @@ class AppData with ChangeNotifier {
       'value': msg,
       'destination': selectedClient,
     };
-    _channel!.sink.add(jsonEncode(message));
+    _socketClient!.sink.add(jsonEncode(message));
   }
 }
