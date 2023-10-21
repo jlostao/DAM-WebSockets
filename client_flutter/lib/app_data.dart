@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-
+import 'package:path_provider/path_provider.dart';
 import 'package:web_socket_channel/io.dart';
 
 // Access appData globaly with:
@@ -27,6 +27,9 @@ class AppData with ChangeNotifier {
   String selectedClient = "";
   int? selectedClientIndex;
   String messages = "";
+
+  bool file_saving = false;
+  bool file_loading = false;
 
   AppData() {
     _getLocalIpAddress();
@@ -169,5 +172,70 @@ class AppData with ChangeNotifier {
       'destination': selectedClient,
     };
     _socketClient!.sink.add(jsonEncode(message));
+  }
+
+  /*
+  * Save file example:
+
+    final myData = {
+      'type': 'list',
+      'clients': clients,
+      'selectedClient': selectedClient,
+      // i més camps que vulguis guardar
+    };
+    
+    await saveFile('myData.json', myData);
+
+  */
+
+  Future<void> saveFile(String fileName, Map<String, dynamic> data) async {
+    file_saving = true;
+    notifyListeners();
+
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/$fileName');
+      final jsonData = jsonEncode(data);
+      await file.writeAsString(jsonData);
+    } catch (e) {
+      // ignore: avoid_print
+      print("Error saving file: $e");
+    } finally {
+      file_saving = false;
+      notifyListeners();
+    }
+  }
+
+  /*
+  * Read file example:
+  
+    final data = await readFile('myData.json');
+
+  */
+
+  Future<Map<String, dynamic>?> readFile(String fileName) async {
+    file_loading = true;
+    notifyListeners();
+
+    try {
+      final directory = await getApplicationDocumentsDirectory();
+      final file = File('${directory.path}/$fileName');
+      if (await file.exists()) {
+        final jsonData = await file.readAsString();
+        final data = jsonDecode(jsonData) as Map<String, dynamic>;
+        return data;
+      } else {
+        // ignore: avoid_print
+        print("File does not exist!");
+        return null;
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print("Error reading file: $e");
+      return null;
+    } finally {
+      file_loading = false;
+      notifyListeners();
+    }
   }
 }
