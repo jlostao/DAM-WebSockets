@@ -1,4 +1,5 @@
 const express = require('express')
+const shadowsObj = require('./utilsShadows.js')
 const webSockets = require('./utilsWebSockets.js')
 
 /*
@@ -20,6 +21,7 @@ const webSockets = require('./utilsWebSockets.js')
  */
 
 var ws = new webSockets()
+let shadows = new shadowsObj()
 
 // Start HTTP server
 const app = express()
@@ -30,7 +32,8 @@ app.use(express.static('public'))
 
 // Activate HTTP server
 const httpServer = app.listen(port, appListen)
-function appListen () {
+async function appListen () {
+  await shadows.init('./public/index.html', './public/shadows')
   console.log(`Listening for HTTP queries on: http://localhost:${port}`)
 }
 
@@ -120,4 +123,20 @@ ws.onClose = (socket, id) => {
     from: "server",
     id: id
   }))
+}
+
+// Configurar la direcció '/index-dev.html' per retornar
+// la pàgina que descarrega tots els shadows (desenvolupament)
+app.get('/index-dev.html', getIndexDev)
+async function getIndexDev (req, res) {
+  res.setHeader('Content-Type', 'text/html');
+  res.send(shadows.getIndexDev())
+}
+
+// Configurar la direcció '/shadows.js' per retornar
+// tot el codi de les shadows en un sol arxiu
+app.get('/shadows.js', getShadows)
+async function getShadows (req, res) {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.send(shadows.getShadows())
 }

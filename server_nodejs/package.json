@@ -13,7 +13,7 @@
         "ws": "^8.14.2"
     },
     "scripts": {
-        "dev": "nodemon app.js",
+        "dev": "nodemon app.js --ext js,html,css",
         "app": "pm2 start ./app.js",
         "pm2List": "pm2 list",
         "pm2Delete": "pm2 delete app"

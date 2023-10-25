@@ -1,0 +1,39 @@
+@import url("/shadows/common.css");
+
+.root {
+    background-color: white;
+    display: none;
+    flex-direction: column;
+    height: 100%;
+    position: absolute;
+    width: 100%;
+}
+
+.root:first-child, .root:last-child {
+    padding: 10px;
+    background-color: #f0f0f0;
+}
+
+#chat-area {
+    flex: 1;
+    display: flex;
+}
+
+#messages {
+    flex: 2;
+    overflow-y: auto;
+}
+
+#clients-list {
+    width: 142px;
+    background-color: #f0f0f0;
+    overflow-y: auto;
+}
+
+#message-input {
+    width: calc(100% - 100px);
+}
+
+#send-btn, #disconnect-btn {
+    margin-left: 10px;
+}
