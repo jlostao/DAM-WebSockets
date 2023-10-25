@@ -7,11 +7,11 @@ class ChatViewDisconnected extends HTMLElement {
     async connectedCallback() {
         // Carrega els estils CSS
         const style = document.createElement('style')
-        style.textContent = await fetch('/shadows/chat_view_disconnected.css').then(r => r.text())
+        style.textContent = await fetch('/shadows/chat_view_disconnected/style.css').then(r => r.text())
         this.shadow.appendChild(style)
     
         // Carrega els elements HTML
-        const htmlContent = await fetch('/shadows/chat_view_disconnected.html').then(r => r.text())
+        const htmlContent = await fetch('/shadows/chat_view_disconnected/view.html').then(r => r.text())
 
         // Converteix la cadena HTML en nodes utilitzant un DocumentFragment
         const template = document.createElement('template');
