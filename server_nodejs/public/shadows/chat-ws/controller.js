@@ -8,11 +8,11 @@ class ChatWS extends HTMLElement {
     async connectedCallback() {
         // Carrega els estils CSS
         const style = document.createElement('style')
-        style.textContent = await fetch('/shadows/chat.css').then(r => r.text())
+        style.textContent = await fetch('/shadows/chat-ws/style.css').then(r => r.text())
         this.shadow.appendChild(style)
     
         // Carrega els elements HTML
-        const htmlContent = await fetch('/shadows/chat.html').then(r => r.text())
+        const htmlContent = await fetch('/shadows/chat-ws/view.html').then(r => r.text())
 
         // Converteix la cadena HTML en nodes utilitzant un DocumentFragment
         const template = document.createElement('template');
