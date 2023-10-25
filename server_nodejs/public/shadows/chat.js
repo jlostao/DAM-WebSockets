@@ -40,56 +40,62 @@ class ChatWS extends HTMLElement {
 
     async showView (viewName) {
         // Amagar totes les vistes
-        let animTime = 500;
-        let refDisconnected = this.shadow.querySelector('chat-view-disconnected')
-        let refConnecting = this.shadow.querySelector('chat-view-connecting')
-        let refDisconnecting = this.shadow.querySelector('chat-view-disconnecting')
-        let refConnected = this.shadow.querySelector('chat-view-connected')
+        let animTime = '500ms';
+        let refDisconnected = this.shadow.querySelector('chat-view-disconnected').shadowRoot.querySelector('.root')
+        let refConnecting = this.shadow.querySelector('chat-view-connecting').shadowRoot.querySelector('.root')
+        let refDisconnecting = this.shadow.querySelector('chat-view-disconnecting').shadowRoot.querySelector('.root')
+        let refConnected = this.shadow.querySelector('chat-view-connected').shadowRoot.querySelector('.root')
 
         // Mostrar la vista seleccionada, amb l'status indicat
         switch (viewName) {
         case 'viewDisconnected':
-
+            if (this.view == 'viewConnecting') {
+                this.animateViewChange('out', animTime, refConnecting, refDisconnected)
+            }
+            if (this.view == 'viewDisconnecting') {
+                this.animateViewChange('out', animTime, refDisconnecting, refDisconnected)
+            }
             break
         case 'viewConnecting':
-            this.animateViews('in', animTime, refDisconnected, refConnecting)
+            this.animateViewChange('in', animTime, refDisconnected, refConnecting)
             break
         case 'viewDisconnecting':
-
+            this.animateViewChange('out', animTime, refConnected, refDisconnecting)
             break
         case 'viewConnected':
-
+            this.animateViewChange('in', animTime, refConnecting, refConnected)
             break
+        }
+        this.view = viewName
+    }
+
+    async animateViewChange (type, animTime, view0, view1) {
+        if (type == 'out') {
+            await Promise.all([
+                this.animateElement(view0, animTime, "translate3d(0, 0, 0)", "translate3d(100%, 0, 0)"),
+                this.animateElement(view1, animTime, "translate3d(-100%, 0, 0)", "translate3d(0%, 0, 0)")
+            ])
+        } else {
+            await Promise.all([
+                this.animateElement(view0, animTime, "translate3d(0, 0, 0)", "translate3d(-100%, 0, 0)"),
+                this.animateElement(view1, animTime, "translate3d(100%, 0, 0)", "translate3d(0%, 0, 0)")
+            ])
         }
     }
 
-    async animateViews(type, animTime, refView0, refView1) {
-
-        let refRoot0 = refView0.shadowRoot.querySelector(".root")
-        let refRoot1 = refView1.shadowRoot.querySelector(".root")
-
-        refRoot1.style.display = "flex"
-        refRoot1.style.transition = "unset"
-        refRoot1.style.transform = "translate3d(100%, 0, 0)"
-
-        await new Promise(resolve => setTimeout(resolve, 1))
-
-        refRoot0.style.transition = "transform " + animTime + "ms ease-in"
-
-        if (type == 'in') {
-            refRoot0.style.transform = "translate3d(-100%, 0, 0)"
-            refRoot1.style.transform = "translate3d(0, 0, 0)"
-        } else {
-            refRoot0.style.transform = "translate3d(0, 0, 0)"
-            refRoot1.style.transform = "translate3d(100%, 0, 0)"
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 1))
-
-        refRoot0.style.transform = "translate3d(0, 0, 0)"
-        refRoot0.style.display = "none"
-        refRoot0.style.transition = "unset"
-        refRoot1.style.transition = "unset"
+    async animateElement(element, animTime, posBegin, posEnd) {
+        element.style.display = 'flex';
+        element.style.transition = 'none';
+    
+        element.style.transform = posBegin;
+    
+        // Add small delay to ensure element is positioned before animating
+        setTimeout(() => {
+            let transition = 'transform ' + animTime + ' ease 0s';
+            element.style.transition = transition;
+    
+            element.style.transform = posEnd;
+        }, 100);
     }
 }
 

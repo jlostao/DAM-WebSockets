@@ -24,9 +24,11 @@ class ChatViewConnected extends HTMLElement {
         this.shadow.querySelector('#buttonDisconnect').addEventListener('click', this.actionDisconnect.bind(this))
     } 
 
-    actionDisconnect () {
+    async actionDisconnect () {
         disconnect()
         document.querySelector('chat-ws').showView('viewDisconnecting')
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        document.querySelector('chat-ws').showView('viewDisconnected')
     }
 }
 

@@ -24,6 +24,7 @@ function connect(protocol, ip, port) {
 }
 
 function disconnect() {
+    console.log("Socket disconnected")
     socket.close();
     socketConnected = false;
 }

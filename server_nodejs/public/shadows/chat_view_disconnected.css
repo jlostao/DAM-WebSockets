@@ -6,6 +6,7 @@
     flex-direction: column;
     height: 100%;
     position: absolute;
+    transform: translate3d(0, 0, 0);
     width: 100%;
 }
 
