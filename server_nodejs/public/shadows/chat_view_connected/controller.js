@@ -40,6 +40,24 @@ class ChatViewConnected extends HTMLElement {
         refMessages.innerHTML += message + "<br/>"
         refMessages.scrollTop = refMessages.scrollHeight;
     }
+
+    setClients () {
+
+        let refClients = this.shadow.querySelector('#clientsList')
+        refClients.innerHTML = ""
+
+        clients.forEach(client => {
+            let obj = document.createElement('div')
+            if (client === selectedClient) {
+                obj.setAttribute('class', 'client clientSelected')
+            } else {
+                obj.setAttribute('class', 'client')
+            }
+            obj.innerHTML = client
+            refClients.appendChild(obj)
+        })
+    
+    }
 }
 
 // Defineix l'element personalitzat

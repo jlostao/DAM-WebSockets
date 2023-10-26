@@ -47,6 +47,15 @@
     width: 145px;
 }
 
+.client {
+    cursor: pointer;
+    padding: 4px;
+}
+
+.clientSelected {
+    background-color: rgb(106, 179, 232);
+}
+
 #message-input {
     width: calc(100% - 100px);
 }
