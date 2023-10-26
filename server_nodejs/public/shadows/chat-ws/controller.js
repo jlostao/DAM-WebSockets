@@ -20,22 +20,6 @@ class ChatWS extends HTMLElement {
         
         // Clona i afegeix el contingut del template al shadow
         this.shadow.appendChild(template.content.cloneNode(true));
-/*
-        // Definir els 'eventListeners' dels objectes 
-        // NO es pot fer des de l'HTML, al ser shadow no funciona
-        // Es recomana fer-ho amb '.bind(this, paràmetres ...)' per simplificar les crides a les funcions
-        this.shadow.querySelector('#infoBtnLogOut').addEventListener('click', this.actionLogout.bind(this))
-        this.shadow.querySelector('#loginForm').addEventListener('submit', this.actionLogin.bind(this))
-        this.shadow.querySelector('#loginBtn').addEventListener('click', this.actionLogin.bind(this))
-        this.shadow.querySelector('#loginShowSignUpForm').addEventListener('click', this.showView.bind(this, 'viewSignUpForm', 'initial'))
-        this.shadow.querySelector('#signUpForm').addEventListener('submit', this.actionLogin.bind(this))
-        this.shadow.querySelector('#signUpPassword').addEventListener('input', this.checkSignUpPasswords.bind(this))
-        this.shadow.querySelector('#signUpPasswordCheck').addEventListener('input', this.checkSignUpPasswords.bind(this))
-        this.shadow.querySelector('#signUpBtn').addEventListener('click', this.actionSignUp.bind(this))
-        this.shadow.querySelector('#signUpShowLoginForm').addEventListener('click', this.showView.bind(this, 'viewLoginForm', 'initial'))
-
-        // Automàticament, validar l'usuari per 'token' (si n'hi ha)
-        await this.actionCheckUserByToken()*/
     } 
 
     async showView (viewName) {
@@ -50,27 +34,27 @@ class ChatWS extends HTMLElement {
         switch (viewName) {
         case 'viewDisconnected':
             if (this.view == 'viewConnecting') {
-                this.animateViewChange('out', animTime, refConnecting, refDisconnected)
+                this.animateViewChange('right', animTime, refConnecting, refDisconnected)
             }
             if (this.view == 'viewDisconnecting') {
-                this.animateViewChange('out', animTime, refDisconnecting, refDisconnected)
+                this.animateViewChange('right', animTime, refDisconnecting, refDisconnected)
             }
             break
         case 'viewConnecting':
-            this.animateViewChange('in', animTime, refDisconnected, refConnecting)
+            this.animateViewChange('left', animTime, refDisconnected, refConnecting)
             break
         case 'viewDisconnecting':
-            this.animateViewChange('out', animTime, refConnected, refDisconnecting)
+            this.animateViewChange('right', animTime, refConnected, refDisconnecting)
             break
         case 'viewConnected':
-            this.animateViewChange('in', animTime, refConnecting, refConnected)
+            this.animateViewChange('left', animTime, refConnecting, refConnected)
             break
         }
         this.view = viewName
     }
 
     async animateViewChange (type, animTime, view0, view1) {
-        if (type == 'out') {
+        if (type == 'right') {
             await Promise.all([
                 this.animateElement(view0, animTime, "translate3d(0, 0, 0)", "translate3d(100%, 0, 0)"),
                 this.animateElement(view1, animTime, "translate3d(-100%, 0, 0)", "translate3d(0%, 0, 0)")
