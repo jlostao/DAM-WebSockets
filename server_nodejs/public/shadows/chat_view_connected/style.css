@@ -54,6 +54,7 @@
 
 .clientSelected {
     background-color: rgb(106, 179, 232);
+    color: white;
 }
 
 #message-input {

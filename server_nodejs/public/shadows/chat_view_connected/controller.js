@@ -54,9 +54,31 @@ class ChatViewConnected extends HTMLElement {
                 obj.setAttribute('class', 'client')
             }
             obj.innerHTML = client
+            obj.addEventListener('click', this.actionClient.bind(this))
             refClients.appendChild(obj)
         })
-    
+    }
+
+    actionClient (event) {
+        let refClients = this.shadow.querySelector('#clientsList')
+        let client = event.target.innerHTML
+        if (client === selectedClient) {
+            selectedClient = ""
+            refClients.childNodes.forEach(element => {
+                if (element.innerHTML === client) {
+                    element.setAttribute('class', 'client')
+                }
+            })
+        } else {
+            selectedClient = client
+            refClients.childNodes.forEach(element => {
+                if (element.innerHTML === client) {
+                    element.setAttribute('class', 'client clientSelected')
+                } else {
+                    element.setAttribute('class', 'client')
+                }
+            })
+        }
     }
 }
 
