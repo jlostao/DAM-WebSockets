@@ -1,5 +1,6 @@
 let socket;
 let socketConnected = false;
+let socketId = ""
 
 function connect(protocol, ip, port) {
 

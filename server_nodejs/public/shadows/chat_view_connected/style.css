@@ -10,9 +10,16 @@
     width: 100%;
 }
 
-.root:first-child, .root:last-child {
-    padding: 10px;
-    background-color: #f0f0f0;
+.row {
+    display: flex;
+}
+
+.padding {
+    padding: 8px;
+}
+
+#connectionInfo {
+    flex-grow: 2;
 }
 
 #chat-area {

@@ -31,14 +31,15 @@ class ChatViewDisconnected extends HTMLElement {
 
         connect('ws', server, port)
 
-        document.querySelector('chat-ws').showView('viewConnecting')
+        document.querySelector('chat-ws').showView('chat-view-connecting')
         
         await new Promise(resolve => setTimeout(resolve, 1500))
 
         if (socketConnected) {
-            document.querySelector('chat-ws').showView('viewConnected')
+            document.querySelector('chat-ws').showView('chat-view-connected')
+            document.querySelector('chat-ws').getViewShadow('chat-view-connected').showInfo()
         } else {
-            document.querySelector('chat-ws').showView('viewDisconnected')
+            document.querySelector('chat-ws').showView('chat-view-disconnected')
         }
     }
 }

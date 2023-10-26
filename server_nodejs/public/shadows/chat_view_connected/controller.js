@@ -26,9 +26,13 @@ class ChatViewConnected extends HTMLElement {
 
     async actionDisconnect () {
         disconnect()
-        document.querySelector('chat-ws').showView('viewDisconnecting')
+        document.querySelector('chat-ws').showView('chat-view-disconnecting')
         await new Promise(resolve => setTimeout(resolve, 1500))
-        document.querySelector('chat-ws').showView('viewDisconnected')
+        document.querySelector('chat-ws').showView('chat-view-disconnected')
+    }
+
+    showInfo () {
+        this.shadow.querySelector('#connectionInfo').innerHTML = `Connected to <b>${socket.remoteAddress}</b>, with ID <b>${socketId}`
     }
 }
 

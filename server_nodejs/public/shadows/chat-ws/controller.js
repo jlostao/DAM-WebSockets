@@ -22,31 +22,39 @@ class ChatWS extends HTMLElement {
         this.shadow.appendChild(template.content.cloneNode(true));
     } 
 
+    getViewShadow (viewName) {
+        return this.shadow.querySelector(viewName)
+    }
+
+    getViewRoot (viewName) {
+        return this.shadow.querySelector(viewName).shadowRoot.querySelector('.root')
+    }
+
     async showView (viewName) {
         // Amagar totes les vistes
         let animTime = '500ms';
-        let refDisconnected = this.shadow.querySelector('chat-view-disconnected').shadowRoot.querySelector('.root')
-        let refConnecting = this.shadow.querySelector('chat-view-connecting').shadowRoot.querySelector('.root')
-        let refDisconnecting = this.shadow.querySelector('chat-view-disconnecting').shadowRoot.querySelector('.root')
-        let refConnected = this.shadow.querySelector('chat-view-connected').shadowRoot.querySelector('.root')
+        let refDisconnected = this.getViewRoot('chat-view-disconnected')
+        let refConnecting = this.getViewRoot('chat-view-connecting')
+        let refDisconnecting = this.getViewRoot('chat-view-disconnecting')
+        let refConnected = this.getViewRoot('chat-view-connected')
 
         // Mostrar la vista seleccionada, amb l'status indicat
         switch (viewName) {
-        case 'viewDisconnected':
-            if (this.view == 'viewConnecting') {
+        case 'chat-view-disconnected':
+            if (this.view == 'chat-view-connecting') {
                 this.animateViewChange('right', animTime, refConnecting, refDisconnected)
             }
-            if (this.view == 'viewDisconnecting') {
+            if (this.view == 'chat-view-disconnecting') {
                 this.animateViewChange('right', animTime, refDisconnecting, refDisconnected)
             }
             break
-        case 'viewConnecting':
+        case 'chat-view-connecting':
             this.animateViewChange('left', animTime, refDisconnected, refConnecting)
             break
-        case 'viewDisconnecting':
+        case 'chat-view-disconnecting':
             this.animateViewChange('right', animTime, refConnected, refDisconnecting)
             break
-        case 'viewConnected':
+        case 'chat-view-connected':
             this.animateViewChange('left', animTime, refConnecting, refConnected)
             break
         }
