@@ -22,20 +22,29 @@
     flex-grow: 2;
 }
 
-#chat-area {
-    flex: 1;
-    display: flex;
+#chatArea {
+    flex-grow: 1;
+    position: relative;
 }
 
 #messages {
-    flex: 2;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 145px;
     overflow-y: auto;
+    scroll-behavior: smooth; 
 }
 
-#clients-list {
-    width: 142px;
+#clientsList {
     background-color: #f0f0f0;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
     overflow-y: auto;
+    width: 145px;
 }
 
 #message-input {

@@ -32,7 +32,13 @@ class ChatViewConnected extends HTMLElement {
     }
 
     showInfo () {
-        this.shadow.querySelector('#connectionInfo').innerHTML = `Connected to <b>${socket.remoteAddress}</b>, with ID <b>${socketId}`
+        this.shadow.querySelector('#connectionInfo').innerHTML = `Connected to <b>${socket.url}</b>, with ID <b>${socketId}</b>`
+    }
+
+    addMessage (message) {
+        let refMessages = this.shadow.querySelector('#messages')
+        refMessages.innerHTML += message + "<br/>"
+        refMessages.scrollTop = refMessages.scrollHeight;
     }
 }
 

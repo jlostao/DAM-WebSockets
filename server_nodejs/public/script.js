@@ -1,6 +1,8 @@
 let socket;
 let socketConnected = false;
 let socketId = ""
+let clients = []
+let selectedClient = ""
 
 function connect(protocol, ip, port) {
 
@@ -13,13 +15,40 @@ function connect(protocol, ip, port) {
     
     socket.onmessage = function(event) {
         let data = JSON.parse(event.data)
+        let message = ""
         console.log(data)
-        // Processa les dades rebudes segons el seu tipus
-        switch(data.type) {
+        switch (data.type) {
             case 'list':
-                // Actualitza la llista de clients
-                break
-            // altres casos
+                clients = data.list.map(e => e.toString());
+                clients.splice(clients.indexOf(socketId), 1);
+                message = `List of clients: ${data.list}\n`;
+                break;
+            case 'id':
+                socketId = data.value;
+                message = `Id received: ${data.value}\n`;
+                break;
+            case 'connected':
+                clients.push(data.id);
+                clients.splice(clients.indexOf(socketId), 1);
+                message = `Connected client: ${data.id}\n`;
+                break;
+            case 'disconnected':
+                if (selectedClient === data.id) {
+                    selectedClient = "";
+                }
+                clients.splice(clients.indexOf(data.id), 1);
+                message = `Disconnected client: ${data.id}\n`;
+                break;
+            case 'private':
+                message = `Private message from '${data.from}': ${data.value}\n`;
+                break;
+            default:
+                message = `Message from '${data.from}': ${data.value}\n`;
+                break;
+        }
+
+        if (message != "") {
+            document.querySelector('chat-ws').getViewShadow('chat-view-connected').addMessage(message)
         }
     }
 }
