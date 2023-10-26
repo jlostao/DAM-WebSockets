@@ -71,3 +71,23 @@ function disconnect() {
 function sendMessage(message) {
     socket.send(JSON.stringify(message))
 }
+
+function broadcastMessage(msg) {
+    let message = {
+      'type': 'broadcast',
+      'value': msg,
+    }
+    if (msg == "") return
+    socket.send(JSON.stringify(message))
+}
+
+function privateMessage(msg) {
+    let message = {
+        'type': 'private',
+        'value': msg,
+        'destination': selectedClient,
+    }
+    if (msg == "") return
+    if (selectedClient == "") return
+    socket.send(JSON.stringify(message))
+}

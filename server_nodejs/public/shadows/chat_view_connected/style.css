@@ -57,10 +57,11 @@
     color: white;
 }
 
-#message-input {
+#inputMessage {
+    margin-left: 8px;
     width: calc(100% - 100px);
 }
 
-#send-btn, #disconnect-btn {
-    margin-left: 10px;
+#buttonSend, #buttonDisconnect {
+    margin-left: 8px;
 }

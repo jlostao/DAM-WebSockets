@@ -22,6 +22,8 @@ class ChatViewConnected extends HTMLElement {
 
         // Definir els 'eventListeners' dels objectes 
         this.shadow.querySelector('#buttonDisconnect').addEventListener('click', this.actionDisconnect.bind(this))
+        this.shadow.querySelector('#inputMessage').addEventListener('keyup', this.actionSendFromKeyDown.bind(this))
+        this.shadow.querySelector('#buttonSend').addEventListener('click', this.actionSend.bind(this))
     } 
 
     async actionDisconnect () {
@@ -79,6 +81,29 @@ class ChatViewConnected extends HTMLElement {
                 }
             })
         }
+
+        if (selectedClient != "") {
+            this.shadow.querySelector('#buttonSend').innerHTML = "Private"
+        } else {
+            this.shadow.querySelector('#buttonSend').innerHTML = "Broadcast"
+        }
+    }
+
+    actionSendFromKeyDown (event) {
+        // Send if ENTER key is pressed
+        if (event.keyCode === 13) {
+            this.actionSend()
+        }
+    }
+
+    actionSend() {
+        let msg = this.shadow.querySelector('#inputMessage').value
+        if (selectedClient == "") {
+            broadcastMessage(msg)
+        } else {
+            privateMessage(msg)
+        }
+        this.shadow.querySelector('#inputMessage').value = ""
     }
 }
 
