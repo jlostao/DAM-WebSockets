@@ -28,22 +28,22 @@
 }
 
 #messages {
-    position: absolute;
-    top: 0;
     bottom: 0;
     left: 0;
-    right: 145px;
     overflow-y: auto;
+    position: absolute;
+    right: 145px;
     scroll-behavior: smooth; 
+    top: 0;
 }
 
 #clientsList {
     background-color: #f0f0f0;
-    position: absolute;
-    top: 0;
     bottom: 0;
-    right: 0;
     overflow-y: auto;
+    position: absolute;
+    right: 0;
+    top: 0;
     width: 145px;
 }
 
