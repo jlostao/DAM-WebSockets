@@ -77,7 +77,6 @@ class ChatWS extends HTMLElement {
         setTimeout(() => {
             let transition = 'transform ' + animTime + ' ease 0s';
             element.style.transition = transition;
-    
             element.style.transform = posEnd;
         }, 100);
     }
