@@ -31,6 +31,9 @@ class AppData with ChangeNotifier {
   bool file_saving = false;
   bool file_loading = false;
 
+  String username = "";
+  int points = 0;
+
   AppData() {
     _getLocalIpAddress();
   }
@@ -118,6 +121,16 @@ class AppData with ChangeNotifier {
         notifyListeners();
       },
     );
+  }
+
+  void setUsername(String newUsername) {
+    username = newUsername;
+    notifyListeners();
+  }
+
+  void submit(String username) {
+    this.username = username;
+    notifyListeners();
   }
 
   disconnectFromServer() async {
