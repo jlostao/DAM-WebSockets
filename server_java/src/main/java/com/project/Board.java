@@ -44,27 +44,8 @@ public class Board {
         }
     }
 
-    public void printBoard() {
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                System.out.print(board[i][j] + " ");
-            }
-            System.out.println();
-        }
-    }
 
-    public boolean flipCard(int row, int col){
-        if(showBoard[row][col] == 0 && turnFlips <= 2){
-            ++turnFlips;
-            showBoard[row][col] = 2;
-            if(turnFlips == 2) return true;
-            else{
-                 firstSelect.set(0, row);
-                 firstSelect.set(1, col);
-            }
-        }
-        return false;
-    }
+    
 
     public void newTurn(){
         turn = (turn + 1) % 2;
@@ -77,6 +58,10 @@ public class Board {
             }
         }
         return true;
+    }
+
+    public void startTurn() {
+        turn = (turn + 1) % 2;
     }
         
 }

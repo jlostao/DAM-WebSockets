@@ -21,69 +21,65 @@ public class ChatServer extends WebSocketServer {
 
     @Override
     public void onStart() {
-        // Quan el servidor s'inicia
         String host = getAddress().getAddress().getHostAddress();
         int port = getAddress().getPort();
         System.out.println("WebSockets server running at: ws://" + host + ":" + port);
         System.out.println("Type 'exit' to stop and exit server.");
         setConnectionLostTimeout(0);
         setConnectionLostTimeout(100);
-        bd.printBoard();
     }
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
-        // Quan un client es connecta
         String clientId = getConnectionId(conn);
 
-        // Li enviem el seu identificador
+        
+
         JSONObject objId = new JSONObject("{}");
         objId.put("type", "id");
         objId.put("from", "server");
         objId.put("value", clientId);
         conn.send(objId.toString()); 
 
-        // Enviem al client la llista amb tots els clients connectats
         sendList(conn);
 
-        // Enviem la direcció URI del nou client a tothom 
         JSONObject objCln = new JSONObject("{}");
         objCln.put("type", "connected");
         objCln.put("from", "server");
         objCln.put("id", clientId);
         broadcast(objCln.toString());
 
-        // Mostrem per pantalla (servidor) la nova connexió
+        if (bd.players.size() == 1) {
+            bd.startTurn();
+            broadcast("{ \"type\": \"newTurn\", \"plays\": \"" + bd.players.get(bd.turn) + "\", \"waits\": \"\", \"prePoints\": 0 }");
+        }
+
         String host = conn.getRemoteSocketAddress().getAddress().getHostAddress();
         System.out.println("New client (" + clientId + "): " + host);
+        
     }
 
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
-        // Quan un client es desconnecta
         String clientId = getConnectionId(conn);
 
-        // Informem a tothom que el client s'ha desconnectat
         JSONObject objCln = new JSONObject("{}");
         objCln.put("type", "disconnected");
         objCln.put("from", "server");
         objCln.put("id", clientId);
         broadcast(objCln.toString());
 
-        // Mostrem per pantalla (servidor) la desconnexió
         System.out.println("Client disconnected '" + clientId + "'");
     }
 
     @Override
     public void onMessage(WebSocket conn, String message) {
         System.out.println(message);
-        // Quan arriba un missatge
         String clientId = getConnectionId(conn);
         try {
             JSONObject objRequest = new JSONObject(message);
             String type = objRequest.getString("type");
             if (type.equalsIgnoreCase("hello")) {
-                System.out.println("ola");
                 // save players while they are less than 2
                 if(bd.players.size() < 2){
                     String userName = objRequest.getString("name");
@@ -96,17 +92,19 @@ public class ChatServer extends WebSocketServer {
                 
 
             } else if (type.equalsIgnoreCase("flip")) {
-                // Check if is the correct player
-                System.out.println(bd.players.get(bd.turn) + " = " + objRequest.getString("name"));
-                if(bd.players.get(bd.turn).equals(objRequest.getString("name"))){
-                    System.out.println("he entrado");
-                    int row = objRequest.getInt("row");
-                    int col = objRequest.getInt("col");
+                int row = objRequest.getInt("row");
+                int col = objRequest.getInt("col");
+
+                broadcast("{ \"type\": \"flip\", \"row\": "+row+", \"col\": "+col+", \"color\": \""+bd.board[row][col]+"\" }");
+            }   else if (type.equalsIgnoreCase("getBoard")) {
+                sendBoard(conn);
+            }
+                /* if(bd.players.get(bd.turn).equals(objRequest.getString("name"))){
                     
                     // Check if is the last flip
-                    if(bd.flipCard(row, col)){
+                     if(bd.flipCard(row, col)){
                         broadcast("{ \"type\": \"flip\", \"row\": "+row+", \"col\": "+col+", \"color\": \""+bd.board[row][col]+"\" }");
-
+    
                         // Check if the two cards are the same color
                         if(bd.board[bd.firstSelect.get(0)][bd.firstSelect.get(1)].equals(bd.board[row][col])){
                             bd.points.set(bd.turn, bd.points.get(bd.turn)+1);
@@ -128,27 +126,27 @@ public class ChatServer extends WebSocketServer {
                                 broadcast("{ \"type\": \"winner\", \"player\": \""+winnerPlayer+"\" }");
                                 bd.endedGame = true;
                             }
-
-                        }else {
+    
+                        } else {
                             bd.showBoard[bd.firstSelect.get(0)][bd.firstSelect.get(1)] = 0;
                             bd.showBoard[row][col] = 0;
                         } 
                         if(!bd.endedGame){
-                             bd.turnFlips = 0;
+                            bd.turnFlips = 0;
                             try {
                                 Thread.sleep(1000); 
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
                             broadcast("{ \"type\": \"clear\"} ");
-                            startTurn();
+                            bd.startTurn();
                         }
-                       
-                    }else if(bd.turnFlips == 1){
+                    } else if(bd.turnFlips == 1){
                         broadcast("{ \"type\": \"flip\", \"row\": "+row+", \"col\": "+col+", \"color\": \""+bd.board[row][col]+"\" }");
-                    }
+                    } 
                 }
-            }
+            } */
+            
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -164,7 +162,7 @@ public class ChatServer extends WebSocketServer {
     public void runServerBucle () {
         boolean running = true;
         try {
-            System.out.println("Starting server");
+            System.out.println("Server Start");
             start();
             while (running) {
                 String line;
@@ -173,7 +171,7 @@ public class ChatServer extends WebSocketServer {
                     running = false;
                 }
             } 
-            System.out.println("Stopping server");
+            System.out.println("Server Stop");
             stop(1000);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -186,6 +184,14 @@ public class ChatServer extends WebSocketServer {
         objResponse.put("from", "server");
         objResponse.put("list", getClients());
         conn.send(objResponse.toString()); 
+    }
+
+    private void sendBoard(WebSocket conn) {
+        JSONObject objResponse = new JSONObject();
+        objResponse.put("type", "board");
+        objResponse.put("from", "server");
+        objResponse.put("board", bd.board);
+        conn.send(objResponse.toString());
     }
 
     public String getConnectionId (WebSocket connection) {

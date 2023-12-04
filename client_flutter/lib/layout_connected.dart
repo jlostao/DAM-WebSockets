@@ -13,11 +13,16 @@ class LayoutConnected extends StatefulWidget {
 
 class _LayoutConnectedState extends State<LayoutConnected> {
   final List<bool> _hovering = List<bool>.filled(16, false);
+  final List<bool> _flipped =
+      List<bool>.filled(16, false); // New list to track flipped state
   List<GlobalKey<FlipCardState>> cardKeys =
       List.generate(16, (_) => GlobalKey<FlipCardState>());
 
   int? firstClickedIndex;
   Color? firstClickedColor;
+
+  bool isCooldown = false;
+  int? lastFlippedIndex;
 
   @override
   void initState() {
@@ -86,82 +91,101 @@ class _LayoutConnectedState extends State<LayoutConnected> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: List.generate(4, (j) {
                         int index = i * 4 + j;
-                        return MouseRegion(
-                          onEnter: (_) {
-                            setState(() {
-                              _hovering[index] = true;
-                            });
-                          },
-                          onExit: (_) {
-                            setState(() {
-                              _hovering[index] = false;
-                            });
-                          },
-                          child: GestureDetector(
-                            onTap: () {
-                              // Pass the context to the flipCard function
-                              appData.flipCard(i, j, appData.userName, context);
-                            },
-                            child: FlipCard(
-                              key: cardKeys[index],
-                              flipOnTouch: false,
-                              onFlip: () {
+                        return GestureDetector(
+                          onTap: () {
+                            if (!isCooldown) {
+                              int currentIndex = i * 4 + j;
+                              appData.flipCard(i, j, appData.userName);
+
+                              // If there is a last flipped card, check if it's different from the current one
+                              if (lastFlippedIndex != null &&
+                                  lastFlippedIndex != currentIndex) {
+                                // Set cooldown to prevent further clicks during the animation
                                 setState(() {
-                                  _hovering[index] = false;
+                                  isCooldown = true;
                                 });
-                              },
-                              front: Card(
-                                shape: RoundedRectangleBorder(
-                                  side:
-                                      BorderSide(color: Colors.black, width: 2),
+
+                                // Reset the last flipped index after a delay (e.g., 1 second)
+                                Future.delayed(Duration(seconds: 1), () {
+                                  setState(() {
+                                    isCooldown = false;
+                                    // Hide both cards after a second
+                                    appData.hideCards(
+                                        [lastFlippedIndex!, currentIndex]);
+                                    lastFlippedIndex = null;
+                                  });
+                                });
+                              } else {
+                                // Set last flipped index for the first card
+                                lastFlippedIndex = currentIndex;
+                              }
+
+                              // Set cooldown for tapping cells
+                              setState(() {
+                                isCooldown = true;
+                              });
+
+                              // Reset cooldown after a delay (e.g., 1 second)
+                              Future.delayed(Duration(seconds: 1), () {
+                                setState(() {
+                                  isCooldown = false;
+                                });
+                              });
+                            }
+                          },
+                          child: FlipCard(
+                            key: cardKeys[index],
+                            flipOnTouch: false,
+                            onFlip: () {
+                              // Handle onFlip if needed
+                            },
+                            front: Card(
+                              shape: RoundedRectangleBorder(
+                                side: const BorderSide(
+                                    color: Colors.black, width: 2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color:
+                                      appData.cardColors[index] ?? Colors.white,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                elevation: _hovering[index] ? 8 : 2,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: _hovering[index]
-                                        ? Colors.grey
-                                        : appData.cardColors[index] ??
-                                            Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  height: 80,
-                                  width: 80,
-                                  child: const Center(
-                                    child: Text(
-                                      "Tap",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                height: 80,
+                                width: 80,
+                                child: const Center(
+                                  child: Text(
+                                    "Tap",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
                               ),
-                              back: Card(
-                                shape: RoundedRectangleBorder(
-                                  side:
-                                      BorderSide(color: Colors.black, width: 2),
+                            ),
+                            back: Card(
+                              shape: RoundedRectangleBorder(
+                                side: const BorderSide(
+                                    color: Colors.black, width: 2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 2,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color:
+                                      appData.cardColors[index] ?? Colors.white,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                elevation: _hovering[index] ? 8 : 2,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: _hovering[index]
-                                        ? Colors.grey
-                                        : appData.cardColors[index] ??
-                                            Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  height: 80,
-                                  width: 80,
-                                  child: const Center(
-                                    child: Text(
-                                      "Tap",
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                                height: 80,
+                                width: 80,
+                                child: const Center(
+                                  child: Text(
+                                    "Tap",
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),

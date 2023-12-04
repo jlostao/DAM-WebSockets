@@ -24,12 +24,12 @@ class AppData with ChangeNotifier {
 
   Map<String, Color?> colorMap = {
     "Red": Colors.red,
-    "Green": Colors.green,
-    "Blue": Colors.blue,
+    "Blue": Colors.blueGrey,
     "Yellow": Colors.yellow,
+    "Green": Colors.green,
     "Orange": Colors.orange,
     "Purple": Colors.purple,
-    "Pink": Colors.pink,
+    "Pink": Colors.cyan,
     "Black": Colors.black
   };
   List<Color?> cardColors = List<Color?>.filled(16, null);
@@ -86,27 +86,18 @@ class AppData with ChangeNotifier {
         }
 
         switch (data['type']) {
-          case 'list':
-            clients = (data['list'] as List).map((e) => e.toString()).toList();
-            clients.remove(mySocketId);
-            messages += "List of clients: ${data['list']}\n";
-            break;
           case 'id':
             mySocketId = data['value'];
             messages += "Id received: ${data['value']}\n";
             break;
+          case 'list':
+            // Existing 'list' case
+            break;
           case 'connected':
-            clients.add(data['id']);
-            clients.remove(mySocketId);
-            messages += "Connected client: ${data['id']}\n";
+            // Existing 'connected' case
             break;
           case 'disconnected':
-            String removeId = data['id'];
-            if (selectedClient == removeId) {
-              selectedClient = "";
-            }
-            clients.remove(data['id']);
-            messages += "Disconnected client: ${data['id']}\n";
+            // Existing 'disconnected' case
             break;
           case 'newTurn':
             turn = data['plays'];
@@ -119,7 +110,6 @@ class AppData with ChangeNotifier {
             final index = row * 4 + col;
             cardColors[index] = colorMap[color];
             checkColors(index);
-
             break;
           default:
             messages += "Message from '${data['from']}': ${data['value']}\n";
@@ -145,6 +135,8 @@ class AppData with ChangeNotifier {
         notifyListeners();
       },
     );
+
+    notifyListeners();
   }
 
   disconnectFromServer() async {
@@ -199,7 +191,7 @@ class AppData with ChangeNotifier {
     _socketClient!.sink.add(jsonEncode(message));
   }
 
-  void flipCard(int row, int col, String user, BuildContext context) async {
+  void flipCard(int row, int col, String user) async {
     final message = {'type': 'flip', 'row': row, 'col': col, 'name': user};
     _socketClient!.sink.add(jsonEncode(message));
     notifyListeners();
@@ -221,13 +213,15 @@ class AppData with ChangeNotifier {
     }
   }
 
-  permFlip(int row, int col, String color) {
-    final message = {
-      'type': 'permShow',
-      'row': row,
-      'col': col,
-      'color': color,
-    };
-    _socketClient!.sink.add(jsonEncode(message));
+  void hideCards(List<int> cardIndices) {
+    // Logic to hide cards at the specified indices
+    // For example, set the corresponding cardColors to null or some default color
+    for (int index in cardIndices) {
+      cardColors[index] =
+          null; // Set the color to null or another default color
+    }
+
+    // Notify listeners to update the UI
+    notifyListeners();
   }
 }

@@ -55,7 +55,7 @@ class _LayoutDisconnectedState extends State<LayoutDisconnected> {
           _buildTextFormField("Server port", appData.port, _portController),
           const SizedBox(height: 20),
           _buildTextFormField(
-              "User Name", appData.userName, _userNameController),
+              "Username", appData.userName, _userNameController),
           const SizedBox(height: 20),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             SizedBox(
