@@ -8,10 +8,11 @@ enum ConnectionStatus {
   connected,
 }
 
-
-void main() => runApp(MyApp());
+void main() => runApp(const MyApp());
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -19,19 +20,20 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
   @override
   _MyHomePageState createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   String? _myId; // Afegit: Propietat per guardar el nostre ID
-
 
   IOWebSocketChannel? _channel;
   final _textController = TextEditingController();
@@ -59,8 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  void _connectToServer () {
-
+  void _connectToServer() {
     setState(() {
       _connectionStatus = ConnectionStatus.connecting;
     });
@@ -68,61 +69,64 @@ class _MyHomePageState extends State<MyHomePage> {
     String server = "ws://$_serverIp:$_serverPort";
     _channel = IOWebSocketChannel.connect(server);
 
-    _channel!.stream.listen((message) {
-      final data = jsonDecode(message);
+    _channel!.stream.listen(
+      (message) {
+        final data = jsonDecode(message);
 
-      if (_connectionStatus != ConnectionStatus.connected) {
+        if (_connectionStatus != ConnectionStatus.connected) {
+          setState(() {
+            _connectionStatus = ConnectionStatus.connected;
+          });
+        }
+
+        switch (data['type']) {
+          case 'list':
             setState(() {
-              _connectionStatus = ConnectionStatus.connected;
+              _clients =
+                  (data['list'] as List).map((e) => e.toString()).toList();
+              _clients.remove(_myId); // Eliminem el nostre ID de la llista
+              _messages += "List of clients: ${data['list']}\n";
             });
-      }
-
-      switch (data['type']) {
-        case 'list':
-          setState(() {
-            _clients = (data['list'] as List).map((e) => e.toString()).toList();
-            _clients.remove(_myId); // Eliminem el nostre ID de la llista
-            _messages += "List of clients: ${data['list']}\n";
-          });
-          break;
-        case 'id':
-          _myId = data['value'];
-          _messages += "Id received: ${data['value']}\n";
-          break;
-        case 'connected':
-          setState(() {
-            _clients.add(data['id']);
-            _clients.remove(_myId);
-            _messages += "Connected client: ${data['id']}\n";
-          });
-          break;
-        case 'disconnected':
-          setState(() {
-            String removeId = data['id'];
-            if (_selectedClient == removeId) {
-              _selectedClient = null;
-            }
-            _clients.remove(data['id']);
-            _messages += "Disconnected client: ${data['id']}\n";
-          });
-          break;
-        default:
-          setState(() {
-            _messages += "Message: ${data['from']}: ${data['value']}\n";
-          });
-          break;
-      }
-    },
-    onError: (error) {
-      setState(() {
-        _connectionStatus = ConnectionStatus.disconnected;
-      });
-    },
-    onDone: () {
-      setState(() {
-        _connectionStatus = ConnectionStatus.disconnected;
-      });
-    },);
+            break;
+          case 'id':
+            _myId = data['value'];
+            _messages += "Id received: ${data['value']}\n";
+            break;
+          case 'connected':
+            setState(() {
+              _clients.add(data['id']);
+              _clients.remove(_myId);
+              _messages += "Connected client: ${data['id']}\n";
+            });
+            break;
+          case 'disconnected':
+            setState(() {
+              String removeId = data['id'];
+              if (_selectedClient == removeId) {
+                _selectedClient = null;
+              }
+              _clients.remove(data['id']);
+              _messages += "Disconnected client: ${data['id']}\n";
+            });
+            break;
+          default:
+            setState(() {
+              _messages += "Message: ${data['from']}: ${data['value']}\n";
+            });
+            break;
+        }
+      },
+      onError: (error) {
+        setState(() {
+          _connectionStatus = ConnectionStatus.disconnected;
+        });
+      },
+      onDone: () {
+        setState(() {
+          _connectionStatus = ConnectionStatus.disconnected;
+        });
+      },
+    );
   }
 
   _disconnectFromServer() {
@@ -165,7 +169,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("WebSocket Client"),
+        title: const Text("WebSocket Client"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -173,50 +177,50 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             TextField(
               controller: _ipController,
-              decoration: InputDecoration(labelText: 'Server IP'),
+              decoration: const InputDecoration(labelText: 'Server IP'),
               enabled: _connectionStatus == ConnectionStatus.disconnected,
             ),
             TextField(
               controller: _portController,
-              decoration: InputDecoration(labelText: 'Server Port'),
+              decoration: const InputDecoration(labelText: 'Server Port'),
               enabled: _connectionStatus == ConnectionStatus.disconnected,
             ),
-            Row(children: [
-              ElevatedButton(
-                child: Text('Connectar'),
-                onPressed: _connectionStatus != ConnectionStatus.disconnected
-                              ? null
-                              : () {
-                                  _serverIp = _ipController.text;
-                                  _serverPort = _portController.text;
-                                  _connectToServer();
-                                },
-              ),
-              ElevatedButton(
-                child: Text('Desconnectar'),
-                onPressed: _connectionStatus == ConnectionStatus.disconnected
-                              ? null
-                              : () {
-                                  _disconnectFromServer();
-                                },
-              ),
-            ],
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: _connectionStatus != ConnectionStatus.disconnected
+                      ? null
+                      : () {
+                          _serverIp = _ipController.text;
+                          _serverPort = _portController.text;
+                          _connectToServer();
+                        },
+                  child: const Text('Connectar'),
+                ),
+                ElevatedButton(
+                  onPressed: _connectionStatus == ConnectionStatus.disconnected
+                      ? null
+                      : () {
+                          _disconnectFromServer();
+                        },
+                  child: const Text('Desconnectar'),
+                ),
+              ],
             ),
             Text("Id: $_myId"),
             TextField(
-              controller: _textController,
-              decoration: InputDecoration(labelText: 'Enter message'),
-              enabled: _connectionStatus != ConnectionStatus.disconnected
-            ),
+                controller: _textController,
+                decoration: const InputDecoration(labelText: 'Enter message'),
+                enabled: _connectionStatus != ConnectionStatus.disconnected),
             Row(
               children: <Widget>[
                 DropdownButton<String>(
                   value: _selectedClient,
-                  hint: Text("Select a client"),
+                  hint: const Text("Select a client"),
                   items: _clients
                       .map((client) => DropdownMenuItem(
-                            child: Text(client),
                             value: client,
+                            child: Text(client),
                           ))
                       .toList(),
                   onChanged: (value) {
@@ -226,22 +230,24 @@ class _MyHomePageState extends State<MyHomePage> {
                   },
                 ),
                 ElevatedButton(
-                  child: Text('Private'),
-                  onPressed: _connectionStatus == ConnectionStatus.disconnected 
-                    ? null
-                    : _privateMessage,
+                  onPressed: _connectionStatus == ConnectionStatus.disconnected
+                      ? null
+                      : _privateMessage,
+                  child: const Text('Private'),
                 ),
                 ElevatedButton(
-                  child: Text('Broadcast'),
-                  onPressed: _connectionStatus == ConnectionStatus.disconnected 
-                    ? null
-                    :_broadcastMessage,
+                  onPressed: _connectionStatus == ConnectionStatus.disconnected
+                      ? null
+                      : _broadcastMessage,
+                  child: const Text('Broadcast'),
                 ),
-                ElevatedButton(  // Botó afegit per refrescar la llista
-                  child: Text('Refresh Clients'),
-                  onPressed: _connectionStatus == ConnectionStatus.disconnected 
-                    ? null
-                    :_refreshClientsList,
+                ElevatedButton(
+                  // Botó afegit per refrescar la llista
+                  onPressed: _connectionStatus == ConnectionStatus.disconnected
+                      ? null
+                      : _refreshClientsList,
+                  // Botó afegit per refrescar la llista
+                  child: const Text('Refresh Clients'),
                 ),
               ],
             ),

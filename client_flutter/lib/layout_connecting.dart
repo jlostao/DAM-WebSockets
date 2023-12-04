@@ -7,7 +7,7 @@ class LayoutConnecting extends StatelessWidget {
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       navigationBar: const CupertinoNavigationBar(
-        middle: Text("WebSockets Client"),
+        middle: Text("Memory"),
       ),
       child: ListView(
         padding: const EdgeInsets.all(20),

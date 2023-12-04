@@ -13,22 +13,18 @@ import java.util.Enumeration;
     WebSockets server, example of messages:
 
     From client to server:
-        - List of clients       { "type": "list" }
-        - Private message       { "type": "private", "value": "Hello 002", "destination": "002" }
-        - Broadcast message     { "type": "broadcast", "value": "Hello everyone" }
+        - Connect       { "type": "hello",  "name": "ScrumMaster3000"}
+        - Flip card       { "type": "flip", "row": 1, "col": 1 , "name": "Gapy"}
 
     From server to client:
-        - Welcome message       { "type": "private", "from": "server", "value": "Welcome to the chat server" }
-        - Client Id             { "type": "id", "from": "server", "value": "002" }
-        - List of clients       { "type": "list", "from": "server", "list": ["001", "002", "003"] }
-        - Private message       { "type": "private", "from": "001", "value": "Hello 002" }
-        - Broadcast message     { "type": "broadcast", "from": "001", "value": "Hello everyone" }
-        - Client connected      { "type": "connected", "from": "server", "id": "001" }
-        - Client disconnected   { "type": "disconnected", "from": "server", "id": "001" }
+        - Flip card     { "type": "flip", "row": 1, "col": 1, "color": "Black" }
+        - Permanent flip card    { "type": "permShow", "row": 1, "col": 1, "color": "Black" }
+        - New turn    { "type": "newTurn", "plays": "Gapy", "waits": "UwU" "prePoints": 20000321342 } //Previous player's points
+        - Clear     { "type": "clear"} clear the board
+        - Winner    { "type": "winner", "player": "Gapy" }
  */
 
 public class Main {
-
 
     public static void main (String[] args) throws InterruptedException, IOException {
 

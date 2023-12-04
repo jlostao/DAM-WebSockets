@@ -12,6 +12,7 @@ class LayoutDisconnected extends StatefulWidget {
 class _LayoutDisconnectedState extends State<LayoutDisconnected> {
   final _ipController = TextEditingController();
   final _portController = TextEditingController();
+  final _userNameController = TextEditingController();
 
   Widget _buildTextFormField(
     String label,
@@ -43,7 +44,7 @@ class _LayoutDisconnectedState extends State<LayoutDisconnected> {
 
     return CupertinoPageScaffold(
       navigationBar: const CupertinoNavigationBar(
-        middle: Text("WebSockets Client"),
+        middle: Text("Memory"),
       ),
       child: ListView(
         padding: const EdgeInsets.all(20),
@@ -53,6 +54,9 @@ class _LayoutDisconnectedState extends State<LayoutDisconnected> {
           const SizedBox(height: 20),
           _buildTextFormField("Server port", appData.port, _portController),
           const SizedBox(height: 20),
+          _buildTextFormField(
+              "User Name", appData.userName, _userNameController),
+          const SizedBox(height: 20),
           Row(mainAxisAlignment: MainAxisAlignment.center, children: [
             SizedBox(
               width: 96,
@@ -61,6 +65,7 @@ class _LayoutDisconnectedState extends State<LayoutDisconnected> {
                 onPressed: () {
                   appData.ip = _ipController.text;
                   appData.port = _portController.text;
+                  appData.userName = _userNameController.text;
                   appData.connectToServer();
                 },
                 padding: EdgeInsets.zero,

@@ -13,6 +13,8 @@ public class ChatServer extends WebSocketServer {
 
     static BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
+    Operations op = new Operations();
+
     public ChatServer (int port) {
         super(new InetSocketAddress(port));
     }
@@ -26,19 +28,13 @@ public class ChatServer extends WebSocketServer {
         System.out.println("Type 'exit' to stop and exit server.");
         setConnectionLostTimeout(0);
         setConnectionLostTimeout(100);
+        op.printBoard();
     }
 
     @Override
     public void onOpen(WebSocket conn, ClientHandshake handshake) {
         // Quan un client es connecta
         String clientId = getConnectionId(conn);
-
-        // Saludem personalment al nou client
-        JSONObject objWlc = new JSONObject("{}");
-        objWlc.put("type", "private");
-        objWlc.put("from", "server");
-        objWlc.put("value", "Welcome to the chat server");
-        conn.send(objWlc.toString()); 
 
         // Li enviem el seu identificador
         JSONObject objId = new JSONObject("{}");
@@ -80,42 +76,78 @@ public class ChatServer extends WebSocketServer {
 
     @Override
     public void onMessage(WebSocket conn, String message) {
+        System.out.println(message);
         // Quan arriba un missatge
         String clientId = getConnectionId(conn);
         try {
             JSONObject objRequest = new JSONObject(message);
             String type = objRequest.getString("type");
-
-            if (type.equalsIgnoreCase("list")) {
-                // El client demana la llista de tots els clients
-                System.out.println("Client '" + clientId + "'' requests list of clients");
-                sendList(conn);
-
-            } else if (type.equalsIgnoreCase("private")) {
-                // El client envia un missatge privat a un altre client
-                System.out.println("Client '" + clientId + "'' sends a private message");
-
-                JSONObject objResponse = new JSONObject("{}");
-                objResponse.put("type", "private");
-                objResponse.put("from", clientId);
-                objResponse.put("value", objRequest.getString("value"));
-
-                String destination = objRequest.getString("destination");
-                WebSocket desti = getClientById(destination);
-
-                if (desti != null) {
-                    desti.send(objResponse.toString()); 
+            if (type.equalsIgnoreCase("hello")) {
+                System.out.println("ola");
+                // save players while they are less than 2
+                if(op.players.size() < 2){
+                    String userName = objRequest.getString("name");
+                    System.out.println(userName);
+                    op.players.add(userName);
+                    if(op.players.size() == 2){
+                        startTurn();
+                    }
                 }
                 
-            } else if (type.equalsIgnoreCase("broadcast")) {
-                // El client envia un missatge a tots els clients
-                System.out.println("Client '" + clientId + "'' sends a broadcast message to everyone");
 
-                JSONObject objResponse = new JSONObject("{}");
-                objResponse.put("type", "broadcast");
-                objResponse.put("from", clientId);
-                objResponse.put("value", objRequest.getString("value"));
-                broadcast(objResponse.toString());
+            } else if (type.equalsIgnoreCase("flip")) {
+                // Check if is the correct player
+                System.out.println(op.players.get(op.turn) + " = " + objRequest.getString("name"));
+                if(op.players.get(op.turn).equals(objRequest.getString("name"))){
+                    System.out.println("he entrado");
+                    int row = objRequest.getInt("row");
+                    int col = objRequest.getInt("col");
+                    
+                    // Check if is the last flip
+                    if(op.flipCard(row, col)){
+                        broadcast("{ \"type\": \"flip\", \"row\": "+row+", \"col\": "+col+", \"color\": \""+op.board[row][col]+"\" }");
+
+                        // Check if the two cards are the same color
+                        if(op.board[op.firstSelect.get(0)][op.firstSelect.get(1)].equals(op.board[row][col])){
+                            op.points.set(op.turn, op.points.get(op.turn)+1);
+                            op.showBoard[op.firstSelect.get(0)][op.firstSelect.get(1)] = 1;
+                            op.showBoard[row][col] = 1;
+                            broadcast("{ \"type\": \"permShow\", \"row\": "+row+", \"col\": "+col+", \"color\": \""+op.board[row][col]+"\" }");
+                            broadcast("{ \"type\": \"permShow\", \"row\": "+op.firstSelect.get(0)+", \"col\": "+op.firstSelect.get(1)+", \"color\": \""
+                            +op.board[op.firstSelect.get(0)][op.firstSelect.get(1)]+"\" }");
+                            
+                            if(op.hasEnded()){
+                                int highestScore = 0;
+                                String winnerPlayer = "";
+                                for (int i = 0; i < op.points.size(); i++) {
+                                    if (op.points.get(i) > highestScore) {
+                                        highestScore = op.points.get(i);
+                                        winnerPlayer = op.players.get(i);
+                                    }
+                                }
+                                broadcast("{ \"type\": \"winner\", \"player\": \""+winnerPlayer+"\" }");
+                                op.endedGame = true;
+                            }
+
+                        }else {
+                            op.showBoard[op.firstSelect.get(0)][op.firstSelect.get(1)] = 0;
+                            op.showBoard[row][col] = 0;
+                        } 
+                        if(!op.endedGame){
+                             op.turnFlips = 0;
+                            try {
+                                Thread.sleep(1000); 
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            broadcast("{ \"type\": \"clear\"} ");
+                            startTurn();
+                        }
+                       
+                    }else if(op.turnFlips == 1){
+                        broadcast("{ \"type\": \"flip\", \"row\": "+row+", \"col\": "+col+", \"color\": \""+op.board[row][col]+"\" }");
+                    }
+                }
             }
 
         } catch (Exception e) {
@@ -183,4 +215,11 @@ public class ChatServer extends WebSocketServer {
         
         return null;
     }
+
+    public void startTurn(){
+        op.newTurn();
+        // Send mssg to notify new turn
+        broadcast("{ \"type\": \"newTurn\", \"plays\": \""+ op.players.get(op.turn)+"\", \"waits\": \""+ op.players.get((op.turn+1)%2)+"\", \"prePoints\": "+ op.points.get((op.turn+1)%2)+" }");
+    }
+
 }

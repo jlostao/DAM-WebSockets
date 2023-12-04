@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:web_socket_channel/io.dart';
 
 // Access appData globaly with:
@@ -18,21 +17,37 @@ enum ConnectionStatus {
 class AppData with ChangeNotifier {
   String ip = "localhost";
   String port = "8888";
+  String userName = "";
 
   IOWebSocketChannel? _socketClient;
   ConnectionStatus connectionStatus = ConnectionStatus.disconnected;
+
+  Map<String, Color?> colorMap = {
+    "Red": Colors.red,
+    "Green": Colors.green,
+    "Blue": Colors.blue,
+    "Yellow": Colors.yellow,
+    "Orange": Colors.orange,
+    "Purple": Colors.purple,
+    "Pink": Colors.pink,
+    "Black": Colors.black
+  };
+  List<Color?> cardColors = List<Color?>.filled(16, null);
 
   String? mySocketId;
   List<String> clients = [];
   String selectedClient = "";
   int? selectedClientIndex;
   String messages = "";
+  String color = "";
+  String turn = "";
+  String wait = "";
+
+  int? firstClickedIndex;
+  Color? firstClickedColor;
 
   bool file_saving = false;
   bool file_loading = false;
-
-  String username = "";
-  int points = 0;
 
   AppData() {
     _getLocalIpAddress();
@@ -93,9 +108,18 @@ class AppData with ChangeNotifier {
             clients.remove(data['id']);
             messages += "Disconnected client: ${data['id']}\n";
             break;
-          case 'private':
-            messages +=
-                "Private message from '${data['from']}': ${data['value']}\n";
+          case 'newTurn':
+            turn = data['plays'];
+            wait = data["waits"];
+            break;
+          case 'flip':
+            color = data['color'];
+            final row = data["row"];
+            final col = data["col"];
+            final index = row * 4 + col;
+            cardColors[index] = colorMap[color];
+            checkColors(index);
+
             break;
           default:
             messages += "Message from '${data['from']}': ${data['value']}\n";
@@ -121,16 +145,6 @@ class AppData with ChangeNotifier {
         notifyListeners();
       },
     );
-  }
-
-  void setUsername(String newUsername) {
-    username = newUsername;
-    notifyListeners();
-  }
-
-  void submit(String username) {
-    this.username = username;
-    notifyListeners();
   }
 
   disconnectFromServer() async {
@@ -165,7 +179,7 @@ class AppData with ChangeNotifier {
     if (selectedClientIndex == null) {
       broadcastMessage(msg);
     } else {
-      privateMessage(msg);
+      print("No client selected");
     }
   }
 
@@ -177,78 +191,43 @@ class AppData with ChangeNotifier {
     _socketClient!.sink.add(jsonEncode(message));
   }
 
-  privateMessage(String msg) {
-    if (selectedClient == "") return;
+  addPlayer(String user) {
     final message = {
-      'type': 'private',
-      'value': msg,
-      'destination': selectedClient,
+      'type': 'hello',
+      'name': user,
     };
     _socketClient!.sink.add(jsonEncode(message));
   }
 
-  /*
-  * Save file example:
-
-    final myData = {
-      'type': 'list',
-      'clients': clients,
-      'selectedClient': selectedClient,
-      // i més camps que vulguis guardar
-    };
-    
-    await saveFile('myData.json', myData);
-
-  */
-
-  Future<void> saveFile(String fileName, Map<String, dynamic> data) async {
-    file_saving = true;
+  void flipCard(int row, int col, String user, BuildContext context) async {
+    final message = {'type': 'flip', 'row': row, 'col': col, 'name': user};
+    _socketClient!.sink.add(jsonEncode(message));
     notifyListeners();
+  }
 
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/$fileName');
-      final jsonData = jsonEncode(data);
-      await file.writeAsString(jsonData);
-    } catch (e) {
-      // ignore: avoid_print
-      print("Error saving file: $e");
-    } finally {
-      file_saving = false;
-      notifyListeners();
+  checkColors(int index) {
+    if (firstClickedIndex == null) {
+      firstClickedIndex = index;
+      firstClickedColor = cardColors[index];
+    } else {
+      if (cardColors[index] != firstClickedColor) {
+        Future.delayed(const Duration(seconds: 1), () {
+          if (firstClickedIndex != null) {
+            cardColors[firstClickedIndex!] = Colors.white;
+            cardColors[index] = Colors.white;
+          }
+        });
+      }
     }
   }
 
-  /*
-  * Read file example:
-  
-    final data = await readFile('myData.json');
-
-  */
-
-  Future<Map<String, dynamic>?> readFile(String fileName) async {
-    file_loading = true;
-    notifyListeners();
-
-    try {
-      final directory = await getApplicationDocumentsDirectory();
-      final file = File('${directory.path}/$fileName');
-      if (await file.exists()) {
-        final jsonData = await file.readAsString();
-        final data = jsonDecode(jsonData) as Map<String, dynamic>;
-        return data;
-      } else {
-        // ignore: avoid_print
-        print("File does not exist!");
-        return null;
-      }
-    } catch (e) {
-      // ignore: avoid_print
-      print("Error reading file: $e");
-      return null;
-    } finally {
-      file_loading = false;
-      notifyListeners();
-    }
+  permFlip(int row, int col, String color) {
+    final message = {
+      'type': 'permShow',
+      'row': row,
+      'col': col,
+      'color': color,
+    };
+    _socketClient!.sink.add(jsonEncode(message));
   }
 }
