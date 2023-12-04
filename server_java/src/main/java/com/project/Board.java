@@ -3,11 +3,11 @@ import java.util.Random;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class Operations {
+public class Board {
 
     public String[][] board = new String[4][4];
 
-    public int[][] showBoard = new int[4][4]; // 0: Don't show, 1: Show permanently, 2: Show temporarily
+    public int[][] showBoard = new int[4][4]; 
     
     String[] colors = {"Red", "Green", "Blue", "Yellow", "Orange", "Purple", "Pink", "Black"};
 
@@ -21,7 +21,7 @@ public class Operations {
 
     boolean endedGame = false;
 
-    Operations(){
+    Board(){
         ArrayList<String> colorPairs = new ArrayList<>();
         firstSelect.add(0);
         firstSelect.add(0);

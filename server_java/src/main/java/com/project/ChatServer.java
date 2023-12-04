@@ -13,7 +13,7 @@ public class ChatServer extends WebSocketServer {
 
     static BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
-    Operations op = new Operations();
+    Board bd = new Board();
 
     public ChatServer (int port) {
         super(new InetSocketAddress(port));
@@ -28,7 +28,7 @@ public class ChatServer extends WebSocketServer {
         System.out.println("Type 'exit' to stop and exit server.");
         setConnectionLostTimeout(0);
         setConnectionLostTimeout(100);
-        op.printBoard();
+        bd.printBoard();
     }
 
     @Override
@@ -85,11 +85,11 @@ public class ChatServer extends WebSocketServer {
             if (type.equalsIgnoreCase("hello")) {
                 System.out.println("ola");
                 // save players while they are less than 2
-                if(op.players.size() < 2){
+                if(bd.players.size() < 2){
                     String userName = objRequest.getString("name");
                     System.out.println(userName);
-                    op.players.add(userName);
-                    if(op.players.size() == 2){
+                    bd.players.add(userName);
+                    if(bd.players.size() == 2){
                         startTurn();
                     }
                 }
@@ -97,44 +97,44 @@ public class ChatServer extends WebSocketServer {
 
             } else if (type.equalsIgnoreCase("flip")) {
                 // Check if is the correct player
-                System.out.println(op.players.get(op.turn) + " = " + objRequest.getString("name"));
-                if(op.players.get(op.turn).equals(objRequest.getString("name"))){
+                System.out.println(bd.players.get(bd.turn) + " = " + objRequest.getString("name"));
+                if(bd.players.get(bd.turn).equals(objRequest.getString("name"))){
                     System.out.println("he entrado");
                     int row = objRequest.getInt("row");
                     int col = objRequest.getInt("col");
                     
                     // Check if is the last flip
-                    if(op.flipCard(row, col)){
-                        broadcast("{ \"type\": \"flip\", \"row\": "+row+", \"col\": "+col+", \"color\": \""+op.board[row][col]+"\" }");
+                    if(bd.flipCard(row, col)){
+                        broadcast("{ \"type\": \"flip\", \"row\": "+row+", \"col\": "+col+", \"color\": \""+bd.board[row][col]+"\" }");
 
                         // Check if the two cards are the same color
-                        if(op.board[op.firstSelect.get(0)][op.firstSelect.get(1)].equals(op.board[row][col])){
-                            op.points.set(op.turn, op.points.get(op.turn)+1);
-                            op.showBoard[op.firstSelect.get(0)][op.firstSelect.get(1)] = 1;
-                            op.showBoard[row][col] = 1;
-                            broadcast("{ \"type\": \"permShow\", \"row\": "+row+", \"col\": "+col+", \"color\": \""+op.board[row][col]+"\" }");
-                            broadcast("{ \"type\": \"permShow\", \"row\": "+op.firstSelect.get(0)+", \"col\": "+op.firstSelect.get(1)+", \"color\": \""
-                            +op.board[op.firstSelect.get(0)][op.firstSelect.get(1)]+"\" }");
+                        if(bd.board[bd.firstSelect.get(0)][bd.firstSelect.get(1)].equals(bd.board[row][col])){
+                            bd.points.set(bd.turn, bd.points.get(bd.turn)+1);
+                            bd.showBoard[bd.firstSelect.get(0)][bd.firstSelect.get(1)] = 1;
+                            bd.showBoard[row][col] = 1;
+                            broadcast("{ \"type\": \"permShow\", \"row\": "+row+", \"col\": "+col+", \"color\": \""+bd.board[row][col]+"\" }");
+                            broadcast("{ \"type\": \"permShow\", \"row\": "+bd.firstSelect.get(0)+", \"col\": "+bd.firstSelect.get(1)+", \"color\": \""
+                            +bd.board[bd.firstSelect.get(0)][bd.firstSelect.get(1)]+"\" }");
                             
-                            if(op.hasEnded()){
+                            if(bd.hasEnded()){
                                 int highestScore = 0;
                                 String winnerPlayer = "";
-                                for (int i = 0; i < op.points.size(); i++) {
-                                    if (op.points.get(i) > highestScore) {
-                                        highestScore = op.points.get(i);
-                                        winnerPlayer = op.players.get(i);
+                                for (int i = 0; i < bd.points.size(); i++) {
+                                    if (bd.points.get(i) > highestScore) {
+                                        highestScore = bd.points.get(i);
+                                        winnerPlayer = bd.players.get(i);
                                     }
                                 }
                                 broadcast("{ \"type\": \"winner\", \"player\": \""+winnerPlayer+"\" }");
-                                op.endedGame = true;
+                                bd.endedGame = true;
                             }
 
                         }else {
-                            op.showBoard[op.firstSelect.get(0)][op.firstSelect.get(1)] = 0;
-                            op.showBoard[row][col] = 0;
+                            bd.showBoard[bd.firstSelect.get(0)][bd.firstSelect.get(1)] = 0;
+                            bd.showBoard[row][col] = 0;
                         } 
-                        if(!op.endedGame){
-                             op.turnFlips = 0;
+                        if(!bd.endedGame){
+                             bd.turnFlips = 0;
                             try {
                                 Thread.sleep(1000); 
                             } catch (InterruptedException e) {
@@ -144,8 +144,8 @@ public class ChatServer extends WebSocketServer {
                             startTurn();
                         }
                        
-                    }else if(op.turnFlips == 1){
-                        broadcast("{ \"type\": \"flip\", \"row\": "+row+", \"col\": "+col+", \"color\": \""+op.board[row][col]+"\" }");
+                    }else if(bd.turnFlips == 1){
+                        broadcast("{ \"type\": \"flip\", \"row\": "+row+", \"col\": "+col+", \"color\": \""+bd.board[row][col]+"\" }");
                     }
                 }
             }
@@ -217,9 +217,9 @@ public class ChatServer extends WebSocketServer {
     }
 
     public void startTurn(){
-        op.newTurn();
+        bd.newTurn();
         // Send mssg to notify new turn
-        broadcast("{ \"type\": \"newTurn\", \"plays\": \""+ op.players.get(op.turn)+"\", \"waits\": \""+ op.players.get((op.turn+1)%2)+"\", \"prePoints\": "+ op.points.get((op.turn+1)%2)+" }");
+        broadcast("{ \"type\": \"newTurn\", \"plays\": \""+ bd.players.get(bd.turn)+"\", \"waits\": \""+ bd.players.get((bd.turn+1)%2)+"\", \"prePoints\": "+ bd.points.get((bd.turn+1)%2)+" }");
     }
 
 }
