@@ -95,26 +95,43 @@ class _LayoutConnectedState extends State<LayoutConnected> {
                           onTap: () {
                             if (!isCooldown) {
                               int currentIndex = i * 4 + j;
+                              print(appData.matchedCards);
+                              if (appData.matchedCards.contains(currentIndex)) {
+                                return;
+                              }
+
                               appData.flipCard(i, j, appData.userName);
 
                               // If there is a last flipped card, check if it's different from the current one
                               if (lastFlippedIndex != null &&
                                   lastFlippedIndex != currentIndex) {
-                                // Set cooldown to prevent further clicks during the animation
-                                setState(() {
-                                  isCooldown = true;
-                                });
+                                // Check if the two selected cards have the same color
 
-                                // Reset the last flipped index after a delay (e.g., 1 second)
-                                Future.delayed(Duration(seconds: 1), () {
+                                print(appData.cardColors);
+                                if (appData.cardColors[lastFlippedIndex!] ==
+                                    appData.cardColors[currentIndex]) {
+                                  // Matching pair, update game logic as needed (e.g., scoring)
+                                  // You might not need to do anything specific here if the game handles matching pairs elsewhere
+                                  appData.matchedCards.add(lastFlippedIndex!);
+                                  appData.matchedCards.add(currentIndex);
+                                } else {
+                                  // Non-matching pair, hide both cards after a delay
+                                  // Set cooldown to prevent further clicks during the animation
                                   setState(() {
-                                    isCooldown = false;
-                                    // Hide both cards after a second
-                                    appData.hideCards(
-                                        [lastFlippedIndex!, currentIndex]);
-                                    lastFlippedIndex = null;
+                                    isCooldown = true;
                                   });
-                                });
+
+                                  // Reset the last flipped index after a delay (e.g., 1 second)
+                                  Future.delayed(Duration(seconds: 1), () {
+                                    setState(() {
+                                      isCooldown = false;
+                                      // Hide both cards after a second if they are not a matching pair
+                                      appData.hideCards(
+                                          [lastFlippedIndex!, currentIndex]);
+                                      lastFlippedIndex = null;
+                                    });
+                                  });
+                                }
                               } else {
                                 // Set last flipped index for the first card
                                 lastFlippedIndex = currentIndex;

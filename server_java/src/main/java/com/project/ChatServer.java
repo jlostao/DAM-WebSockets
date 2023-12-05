@@ -7,6 +7,7 @@ import java.net.InetSocketAddress;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class ChatServer extends WebSocketServer {
@@ -187,12 +188,23 @@ public class ChatServer extends WebSocketServer {
     }
 
     private void sendBoard(WebSocket conn) {
-        JSONObject objResponse = new JSONObject();
-        objResponse.put("type", "board");
-        objResponse.put("from", "server");
-        objResponse.put("board", bd.board);
-        conn.send(objResponse.toString());
+    JSONObject objResponse = new JSONObject();
+    objResponse.put("type", "board");
+    objResponse.put("from", "server");
+
+    // Convert the 2D array to a JSON array of JSON arrays
+    JSONArray boardArray = new JSONArray();
+    for (int i = 0; i < bd.board.length; i++) {
+        JSONArray rowArray = new JSONArray();
+        for (int j = 0; j < bd.board[i].length; j++) {
+            rowArray.put(bd.board[i][j]);
+        }
+        boardArray.put(rowArray);
     }
+
+    objResponse.put("board", boardArray);
+    conn.send(objResponse.toString());
+}
 
     public String getConnectionId (WebSocket connection) {
         String name = connection.toString();
@@ -227,5 +239,7 @@ public class ChatServer extends WebSocketServer {
         // Send mssg to notify new turn
         broadcast("{ \"type\": \"newTurn\", \"plays\": \""+ bd.players.get(bd.turn)+"\", \"waits\": \""+ bd.players.get((bd.turn+1)%2)+"\", \"prePoints\": "+ bd.points.get((bd.turn+1)%2)+" }");
     }
+
+    
 
 }

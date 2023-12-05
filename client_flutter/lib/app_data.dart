@@ -24,12 +24,12 @@ class AppData with ChangeNotifier {
 
   Map<String, Color?> colorMap = {
     "Red": Colors.red,
-    "Blue": Colors.blueGrey,
+    "Blue": Colors.blue,
     "Yellow": Colors.yellow,
     "Green": Colors.green,
     "Orange": Colors.orange,
     "Purple": Colors.purple,
-    "Pink": Colors.cyan,
+    "Pink": Colors.pink,
     "Black": Colors.black
   };
   List<Color?> cardColors = List<Color?>.filled(16, null);
@@ -48,6 +48,9 @@ class AppData with ChangeNotifier {
 
   bool file_saving = false;
   bool file_loading = false;
+
+  List<bool> cardVisibility = List.generate(16, (index) => true);
+  List<int> matchedCards = [];
 
   AppData() {
     _getLocalIpAddress();
@@ -197,31 +200,52 @@ class AppData with ChangeNotifier {
     notifyListeners();
   }
 
-  checkColors(int index) {
+  void checkColors(int index) {
     if (firstClickedIndex == null) {
       firstClickedIndex = index;
       firstClickedColor = cardColors[index];
     } else {
-      if (cardColors[index] != firstClickedColor) {
+      if (cardColors[index] == firstClickedColor) {
+        // Matching pair found, handle accordingly
+      } else {
+        // Non-matching pair, flip both cards back after a delay
         Future.delayed(const Duration(seconds: 1), () {
           if (firstClickedIndex != null) {
-            cardColors[firstClickedIndex!] = Colors.white;
-            cardColors[index] = Colors.white;
+            notifyListeners(); // Notify listeners to update UI after flipping back
           }
         });
       }
+      // Reset the first clicked index and color
+      Future.delayed(const Duration(seconds: 1), () {
+        firstClickedIndex = null;
+        firstClickedColor = null;
+      });
     }
   }
 
   void hideCards(List<int> cardIndices) {
-    // Logic to hide cards at the specified indices
-    // For example, set the corresponding cardColors to null or some default color
     for (int index in cardIndices) {
-      cardColors[index] =
-          null; // Set the color to null or another default color
+      cardColors[index] = null;
     }
 
-    // Notify listeners to update the UI
     notifyListeners();
+
+    Future.delayed(const Duration(seconds: 1), () {
+      for (int index in cardIndices) {
+        cardColors[index] = Colors.white;
+      }
+      notifyListeners();
+    });
+    Future.delayed(const Duration(seconds: 1), () {});
+  }
+
+  void updateBoard(List<List<String>> newBoard) {
+    cardColors = List.generate(
+        16, (index) => getColorFromString(newBoard[index] as String));
+    notifyListeners();
+  }
+
+  Color getColorFromString(String colorString) {
+    return colorMap[colorString] ?? Colors.white;
   }
 }
